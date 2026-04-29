@@ -1,5 +1,5 @@
 // MyRegister Service Worker — minimal caching for PWA shell
-const CACHE_NAME = "myregister-v1";
+const CACHE_NAME = "myregister-v2";
 const STATIC_ASSETS = ["/", "/dashboard", "/history", "/analytics", "/log"];
 
 self.addEventListener("install", (event) => {
