@@ -7,17 +7,17 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Paw — Your Calm Video Editing Journal",
+  title: "MyRegister — Your Calm Video Editing Journal",
   description:
     "A minimalist daily video-editing tracker. Log your creative flow, track your progress, and find your zen.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Paw",
+    title: "MyRegister",
   },
   openGraph: {
-    title: "Paw — Your Calm Video Editing Journal",
+    title: "MyRegister — Your Calm Video Editing Journal",
     description:
       "A minimalist daily video-editing tracker for creative professionals.",
     type: "website",

@@ -1,4 +1,4 @@
-# 🐾 Paw — Your Calm Video Editing Journal
+# 🐾 MyRegister — Your Calm Video Editing Journal
 
 A minimalist, zen-inspired daily video-editing tracker built for creative professionals. Log your editing sessions, track your creative flow, and find your rhythm.
 

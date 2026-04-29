@@ -51,7 +51,7 @@ export function exportAsCSV(entries: Entry[], range: ExportRange): void {
   ]);
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-  downloadFile(csv, `paw-export-${range}-${format(new Date(), "yyyy-MM-dd")}.csv`, "text/csv");
+  downloadFile(csv, `myregister-export-${range}-${format(new Date(), "yyyy-MM-dd")}.csv`, "text/csv");
 }
 
 /**
@@ -71,7 +71,7 @@ export async function exportAsPDF(
   // Header
   doc.setFontSize(28);
   doc.setFont("helvetica", "bold");
-  doc.text("Paw", 20, 25);
+  doc.text("MyRegister", 20, 25);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "italic");
@@ -125,7 +125,7 @@ export async function exportAsPDF(
     theme: "grid",
   });
 
-  doc.save(`paw-report-${range}-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  doc.save(`myregister-report-${range}-${format(new Date(), "yyyy-MM-dd")}.pdf`);
 }
 
 /**
@@ -151,7 +151,7 @@ export async function exportAsExcel(
 
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Paw Entries");
+  XLSX.utils.book_append_sheet(wb, ws, "MyRegister Entries");
 
   // Set column widths
   ws["!cols"] = [
@@ -167,7 +167,7 @@ export async function exportAsExcel(
 
   XLSX.writeFile(
     wb,
-    `paw-export-${range}-${format(new Date(), "yyyy-MM-dd")}.xlsx`
+    `myregister-export-${range}-${format(new Date(), "yyyy-MM-dd")}.xlsx`
   );
 }
 

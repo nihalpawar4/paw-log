@@ -1,6 +1,6 @@
 {
-  "name": "Paw",
-  "short_name": "Paw",
+  "name": "MyRegister",
+  "short_name": "MyRegister",
   "description": "Your calm video editing journal — track your creative flow daily.",
   "start_url": "/",
   "display": "standalone",

@@ -98,7 +98,7 @@ function LogEntryFormInner({
       });
       resetForm();
       onClose();
-      toast.success(editEntry ? "Entry updated" : "Entry saved to Paw ✨");
+      toast.success(editEntry ? "Entry updated" : "Entry saved to MyRegister ✨");
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -306,7 +306,7 @@ function LogEntryFormInner({
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      {editEntry ? "Update Entry" : "Save to Paw"}
+                      {editEntry ? "Update Entry" : "Save to MyRegister"}
                     </>
                   )}
                 </Button>

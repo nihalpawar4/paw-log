@@ -123,11 +123,11 @@ export default function ServiceWorkerRegistration() {
             <Download className="h-4 w-4 text-foreground" />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">Install Paw app</p>
+            <p className="text-sm font-medium text-foreground">Install MyRegister app</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               {isIOS && !deferredPrompt
                 ? "Tap Share, then Add to Home Screen for a full app experience."
-                : "Add Paw to your home screen for faster access and offline support."}
+                : "Add MyRegister to your home screen for faster access and offline support."}
             </p>
           </div>
         </div>

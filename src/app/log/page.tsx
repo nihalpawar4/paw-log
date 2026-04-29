@@ -96,7 +96,7 @@ export default function LogPage() {
         });
       }
 
-      toast.success("Entry saved to Paw ✨");
+      toast.success("Entry saved to MyRegister ✨");
       router.push("/dashboard");
     } catch {
       toast.error("Something went wrong");
@@ -313,7 +313,7 @@ export default function LogPage() {
                   ) : (
                     <>
                       <Save className="mr-2 h-5 w-5" />
-                      Save to Paw
+                      Save to MyRegister
                     </>
                   )}
                 </Button>

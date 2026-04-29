@@ -1,5 +1,5 @@
-// Paw Service Worker — minimal caching for PWA shell
-const CACHE_NAME = "paw-v1";
+// MyRegister Service Worker — minimal caching for PWA shell
+const CACHE_NAME = "myregister-v1";
 const STATIC_ASSETS = ["/", "/dashboard", "/history", "/analytics", "/log"];
 
 self.addEventListener("install", (event) => {

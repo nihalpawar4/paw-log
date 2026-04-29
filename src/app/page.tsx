@@ -109,7 +109,7 @@ export default function LoginPage() {
           transition={{ delay: 0.15, duration: 0.5 }}
           className="text-6xl sm:text-7xl md:text-8xl font-extralight tracking-[-0.04em] text-foreground mb-4"
         >
-          Paw
+          MyRegister
         </motion.h1>
 
         {/* Tagline */}
@@ -295,7 +295,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-2">
             <PawPrint className="h-4 w-4 text-muted-foreground/50" />
             <span className="text-xs text-muted-foreground/50 font-light tracking-wider">
-              Paw
+              MyRegister
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground/30 font-light">

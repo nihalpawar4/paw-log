@@ -42,7 +42,7 @@ export default function Navbar() {
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
           <PawPrint className="h-5 w-5 text-foreground transition-transform duration-300 group-hover:scale-110" />
           <span className="text-lg font-light tracking-wider text-foreground">
-            Paw
+            MyRegister
           </span>
         </Link>
 
