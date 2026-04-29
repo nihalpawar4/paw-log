@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
@@ -15,6 +15,7 @@ import {
   PawPrint,
   Sun,
   Moon,
+  User,
 } from "lucide-react";
 
 const navItems = [
@@ -27,6 +28,28 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropup when tapping outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent | TouchEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [profileOpen]);
 
   if (!user) return null;
 
@@ -143,28 +166,81 @@ export default function Navbar() {
             );
           })}
 
-          {/* Theme toggle for mobile */}
-          <button
-            onClick={toggleTheme}
-            className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-            <span className="text-[10px] tracking-wider uppercase">Theme</span>
-          </button>
+          {/* Profile dropup for mobile */}
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setProfileOpen((v) => !v)}
+              className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
+              aria-label="Profile menu"
+            >
+              {user.photoURL ? (
+                <Image
+                  src={user.photoURL}
+                  alt="Profile"
+                  width={22}
+                  height={22}
+                  className="h-[22px] w-[22px] rounded-full ring-1 ring-border"
+                />
+              ) : (
+                <User className="h-5 w-5" />
+              )}
+              <span className="text-[10px] tracking-wider uppercase">Me</span>
+            </button>
 
-          <button
-            onClick={() => signOut()}
-            className="flex flex-col items-center gap-1 py-2 px-3 text-muted-foreground hover:text-foreground transition-colors duration-200"
-            aria-label="Sign out"
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="text-[10px] tracking-wider uppercase">Exit</span>
-          </button>
+            <AnimatePresence>
+              {profileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute bottom-full right-0 mb-2 w-44 rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.25)] overflow-hidden"
+                >
+                  {/* User info */}
+                  {user.displayName && (
+                    <div className="px-3.5 py-2.5 border-b border-border">
+                      <p className="text-xs font-medium text-foreground truncate">
+                        {user.displayName}
+                      </p>
+                      {user.email && (
+                        <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                          {user.email}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Theme toggle */}
+                  <button
+                    onClick={() => {
+                      toggleTheme();
+                      setProfileOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-all duration-200"
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="h-3.5 w-3.5" />
+                    ) : (
+                      <Moon className="h-3.5 w-3.5" />
+                    )}
+                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  </button>
+
+                  {/* Logout */}
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setProfileOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-all duration-200 border-t border-border"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.nav>
     </>
