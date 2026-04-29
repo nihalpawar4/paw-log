@@ -97,10 +97,42 @@ export default function DashboardPage() {
           0
         );
 
+        // Check today's total BEFORE saving to detect goal completion
+        const todaySecondsBefore = getTodayTotal(entries);
+        const dailyGoalSeconds = (settings?.dailyGoalMinutes || 30) * 60;
+        const wasGoalMet = todaySecondsBefore >= dailyGoalSeconds;
+
         await createEntry(user.uid, data);
 
+        const todaySecondsAfter = todaySecondsBefore + newTotalSeconds;
+        const isGoalNowMet = todaySecondsAfter >= dailyGoalSeconds;
+
+        // 🎉 Celebrate goal completion!
+        if (!wasGoalMet && isGoalNowMet) {
+          confetti({
+            particleCount: 150,
+            spread: 90,
+            origin: { y: 0.5 },
+            colors: ["#ffffff", "#888888", "#cccccc", "#f0f0f0"],
+          });
+          // Second burst for extra celebration
+          setTimeout(() => {
+            confetti({
+              particleCount: 80,
+              spread: 120,
+              origin: { y: 0.6, x: 0.3 },
+              colors: ["#ffffff", "#aaaaaa"],
+            });
+            confetti({
+              particleCount: 80,
+              spread: 120,
+              origin: { y: 0.6, x: 0.7 },
+              colors: ["#ffffff", "#aaaaaa"],
+            });
+          }, 300);
+        }
         // Confetti if personal best!
-        if (newTotalSeconds > prevBest && prevBest > 0) {
+        else if (newTotalSeconds > prevBest && prevBest > 0) {
           confetti({
             particleCount: 100,
             spread: 70,
@@ -111,7 +143,7 @@ export default function DashboardPage() {
       }
       setEditEntry(null);
     },
-    [user, editEntry, entries]
+    [user, editEntry, entries, settings]
   );
 
   const handleGoalSave = useCallback(

@@ -56,7 +56,6 @@ function LogEntryFormInner({
   );
   const [topic, setTopic] = useState(() => editEntry?.topic ?? "");
   const [description, setDescription] = useState(() => editEntry?.description ?? "");
-  const [timeGiven, setTimeGiven] = useState(() => editEntry?.timeGiven ?? "");
   const [notes, setNotes] = useState(() => editEntry?.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -67,7 +66,6 @@ function LogEntryFormInner({
     setSeconds("");
     setTopic("");
     setDescription("");
-    setTimeGiven("");
     setNotes("");
   }, []);
 
@@ -93,7 +91,7 @@ function LogEntryFormInner({
         secondsCompleted: parseInt(seconds) || 0,
         topic: topic.trim(),
         description: description.trim(),
-        timeGiven: timeGiven.trim(),
+        timeGiven: "",
         notes: notes.trim(),
       });
       resetForm();
@@ -104,7 +102,7 @@ function LogEntryFormInner({
     } finally {
       setSaving(false);
     }
-  }, [date, minutes, seconds, topic, description, timeGiven, notes, onSave, onClose, editEntry, resetForm]);
+  }, [date, minutes, seconds, topic, description, notes, onSave, onClose, editEntry, resetForm]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -251,18 +249,6 @@ function LogEntryFormInner({
               )}
             </div>
 
-            {/* Time Given */}
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                Time Given
-              </label>
-              <Input
-                placeholder='e.g. "2 hours" or "by EOD"'
-                value={timeGiven}
-                onChange={(e) => setTimeGiven(e.target.value)}
-                className="bg-secondary border-border text-foreground h-11"
-              />
-            </div>
 
             {/* Notes (optional) */}
             <div className="space-y-2">

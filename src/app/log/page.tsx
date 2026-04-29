@@ -4,8 +4,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { createEntry, subscribeToEntries } from "@/lib/firestore";
-import { Entry } from "@/types";
+import { createEntry, subscribeToEntries, subscribeToSettings } from "@/lib/firestore";
+import { Entry, UserSettings } from "@/types";
+import { getTodayTotal } from "@/lib/analytics";
 import { TOPIC_SUGGESTIONS } from "@/lib/quotes";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,12 +33,12 @@ export default function LogPage() {
   const router = useRouter();
 
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [date, setDate] = useState<Date>(new Date());
   const [minutes, setMinutes] = useState("");
   const [seconds, setSeconds] = useState("");
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
-  const [timeGiven, setTimeGiven] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -49,6 +50,12 @@ export default function LogPage() {
   useEffect(() => {
     if (!user) return;
     const unsub = subscribeToEntries(user.uid, setEntries);
+    return () => unsub();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeToSettings(user.uid, setSettings);
     return () => unsub();
   }, [user]);
 
@@ -82,12 +89,42 @@ export default function LogPage() {
         secondsCompleted: parseInt(seconds) || 0,
         topic: topic.trim(),
         description: description.trim(),
-        timeGiven: timeGiven.trim(),
+        timeGiven: "",
         notes: notes.trim(),
       });
 
+      // Check today's total to detect goal completion
+      const todaySecondsBefore = getTodayTotal(entries);
+      const dailyGoalSeconds = (settings?.dailyGoalMinutes || 30) * 60;
+      const wasGoalMet = todaySecondsBefore >= dailyGoalSeconds;
+      const todaySecondsAfter = todaySecondsBefore + newTotalSeconds;
+      const isGoalNowMet = todaySecondsAfter >= dailyGoalSeconds;
+
+      // 🎉 Celebrate goal completion!
+      if (!wasGoalMet && isGoalNowMet) {
+        confetti({
+          particleCount: 150,
+          spread: 90,
+          origin: { y: 0.5 },
+          colors: ["#ffffff", "#888888", "#cccccc", "#f0f0f0"],
+        });
+        setTimeout(() => {
+          confetti({
+            particleCount: 80,
+            spread: 120,
+            origin: { y: 0.6, x: 0.3 },
+            colors: ["#ffffff", "#aaaaaa"],
+          });
+          confetti({
+            particleCount: 80,
+            spread: 120,
+            origin: { y: 0.6, x: 0.7 },
+            colors: ["#ffffff", "#aaaaaa"],
+          });
+        }, 300);
+      }
       // Confetti on personal best
-      if (newTotalSeconds > prevBest && prevBest > 0) {
+      else if (newTotalSeconds > prevBest && prevBest > 0) {
         confetti({
           particleCount: 100,
           spread: 70,
@@ -103,7 +140,7 @@ export default function LogPage() {
     } finally {
       setSaving(false);
     }
-  }, [user, date, minutes, seconds, topic, description, timeGiven, notes, entries, router]);
+  }, [user, date, minutes, seconds, topic, description, notes, entries, settings, router]);
 
   if (authLoading || !user) return null;
 
@@ -259,18 +296,6 @@ export default function LogPage() {
                 )}
               </div>
 
-              {/* Time Given */}
-              <div className="space-y-2">
-                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Time Given
-                </label>
-                <Input
-                  placeholder='e.g. "2 hours" or "by EOD"'
-                  value={timeGiven}
-                  onChange={(e) => setTimeGiven(e.target.value)}
-                  className="bg-card border-border text-foreground h-12"
-                />
-              </div>
 
               {/* Notes */}
               <div className="space-y-2">
