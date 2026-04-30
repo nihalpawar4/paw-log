@@ -107,7 +107,8 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className="text-6xl sm:text-7xl md:text-8xl font-extralight tracking-[-0.04em] text-foreground mb-4"
+          className="text-6xl sm:text-7xl md:text-8xl font-normal tracking-[-0.02em] text-foreground mb-4 italic"
+          style={{ fontFamily: "var(--font-display)" }}
         >
           MyRegister
         </motion.h1>

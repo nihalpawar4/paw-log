@@ -28,6 +28,8 @@ interface LogEntryFormProps {
   onClose: () => void;
   onSave: (data: EntryFormData) => Promise<void>;
   editEntry?: Entry | null;
+  prefillMinutes?: number;
+  prefillSeconds?: number;
 }
 
 /**
@@ -35,7 +37,11 @@ interface LogEntryFormProps {
  * avoiding the need for setState-in-effect.
  */
 export default function LogEntryForm(props: LogEntryFormProps) {
-  const key = props.editEntry ? props.editEntry.id : "new";
+  const key = props.editEntry
+    ? props.editEntry.id
+    : props.prefillMinutes !== undefined || props.prefillSeconds !== undefined
+    ? `timer-${props.prefillMinutes}-${props.prefillSeconds}`
+    : "new";
   return <LogEntryFormInner key={key} {...props} />;
 }
 
@@ -44,15 +50,25 @@ function LogEntryFormInner({
   onClose,
   onSave,
   editEntry,
+  prefillMinutes,
+  prefillSeconds,
 }: LogEntryFormProps) {
   const [date, setDate] = useState<Date>(() =>
     editEntry ? editEntry.date.toDate() : new Date()
   );
   const [minutes, setMinutes] = useState(() =>
-    editEntry ? editEntry.minutesCompleted.toString() : ""
+    editEntry
+      ? editEntry.minutesCompleted.toString()
+      : prefillMinutes !== undefined
+      ? prefillMinutes.toString()
+      : ""
   );
   const [seconds, setSeconds] = useState(() =>
-    editEntry ? editEntry.secondsCompleted.toString() : ""
+    editEntry
+      ? editEntry.secondsCompleted.toString()
+      : prefillSeconds !== undefined
+      ? prefillSeconds.toString()
+      : ""
   );
   const [topic, setTopic] = useState(() => editEntry?.topic ?? "");
   const [description, setDescription] = useState(() => editEntry?.description ?? "");
