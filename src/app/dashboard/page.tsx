@@ -184,11 +184,12 @@ export default function DashboardPage() {
   );
 
   return (
-    <PageTransition className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Main content */}
-      <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
+      {/* Main content — animated on page transition */}
+      <PageTransition>
+        <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Greeting */}
           <motion.div
@@ -389,7 +390,8 @@ export default function DashboardPage() {
             </div>
           </motion.div>
         </div>
-      </main>
+        </main>
+      </PageTransition>
 
       {/* FAB — Log Today */}
       <motion.button
@@ -426,6 +428,6 @@ export default function DashboardPage() {
         onSave={handleGoalSave}
         currentGoal={dailyGoal}
       />
-    </PageTransition>
+    </div>
   );
 }

@@ -106,10 +106,11 @@ export default function HistoryPage() {
   if (authLoading || !user || dataLoading) return <ZenSkeleton />;
 
   return (
-    <PageTransition className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
+      <PageTransition>
+        <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <motion.div
@@ -317,7 +318,8 @@ export default function HistoryPage() {
             </motion.div>
           )}
         </div>
-      </main>
+        </main>
+      </PageTransition>
 
       {/* Edit Modal */}
       <LogEntryForm
@@ -361,6 +363,6 @@ export default function HistoryPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </PageTransition>
+    </div>
   );
 }
