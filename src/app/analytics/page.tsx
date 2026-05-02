@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import PageTransition from "@/components/PageTransition";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { subscribeToEntries } from "@/lib/firestore";
@@ -93,7 +94,7 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageTransition className="min-h-screen bg-background">
       <Navbar />
 
       <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
@@ -245,6 +246,6 @@ export default function AnalyticsPage() {
           </motion.div>
         </div>
       </main>
-    </div>
+    </PageTransition>
   );
 }

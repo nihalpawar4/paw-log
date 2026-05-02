@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import FilmGrain from "@/components/FilmGrain";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -50,6 +51,7 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <TooltipProvider>
+              <FilmGrain />
               {children}
             </TooltipProvider>
             <Toaster

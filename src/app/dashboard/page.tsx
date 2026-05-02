@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import {
@@ -26,6 +26,8 @@ import EntryCard from "@/components/EntryCard";
 import MiniChart from "@/components/MiniChart";
 import RadialProgress from "@/components/RadialProgress";
 import GoalDialog from "@/components/GoalDialog";
+import PageTransition from "@/components/PageTransition";
+import TypewriterQuote from "@/components/TypewriterQuote";
 
 import ZenSkeleton from "@/components/ZenSkeleton";
 import {
@@ -47,6 +49,7 @@ export default function DashboardPage() {
   const [goalOpen, setGoalOpen] = useState(false);
 
   const [editEntry, setEditEntry] = useState<Entry | null>(null);
+  const [orderedEntries, setOrderedEntries] = useState<Entry[]>([]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -84,6 +87,11 @@ export default function DashboardPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Sync ordered entries when entries change from Firestore
+  useEffect(() => {
+    setOrderedEntries(entries.slice(0, 5));
+  }, [entries]);
 
   const handleSaveEntry = useCallback(
     async (data: EntryFormData) => {
@@ -166,7 +174,7 @@ export default function DashboardPage() {
   const dailyGoal = settings?.dailyGoalMinutes || 30;
   const weeklyProgress = getWeeklyProgress(entries, dailyGoal);
   const quote = getStreakQuote(streakData.current);
-  const recentEntries = entries.slice(0, 3);
+  const recentEntries = entries.slice(0, 5);
   const firstName = user.displayName?.split(" ")[0] || "Creator";
 
   // Today's goal progress
@@ -176,7 +184,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <PageTransition className="min-h-screen bg-background">
       <Navbar />
 
       {/* Main content */}
@@ -301,9 +309,12 @@ export default function DashboardPage() {
             transition={{ delay: 0.4, duration: 0.6 }}
             className="mb-8 px-1"
           >
-            <p className="text-sm italic text-muted-foreground font-light leading-relaxed">
-              &ldquo;{quote}&rdquo;
-            </p>
+            <TypewriterQuote
+              text={quote}
+              startDelay={1000}
+              speed={30}
+              className="text-sm italic text-muted-foreground font-light leading-relaxed"
+            />
           </motion.div>
 
           {/* Mini Chart — Last 30 Days */}
@@ -343,9 +354,14 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              <AnimatePresence mode="popLayout">
-                {recentEntries.length > 0 ? (
-                  recentEntries.map((entry, i) => (
+              {orderedEntries.length > 0 ? (
+                <Reorder.Group
+                  axis="y"
+                  values={orderedEntries}
+                  onReorder={setOrderedEntries}
+                  className="space-y-3"
+                >
+                  {orderedEntries.map((entry, i) => (
                     <EntryCard
                       key={entry.id}
                       entry={entry}
@@ -355,20 +371,21 @@ export default function DashboardPage() {
                         setLogOpen(true);
                       }}
                       compact
+                      draggable
                     />
-                  ))
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-16 text-muted-foreground/50"
-                  >
-                    <p className="text-sm italic font-light">
-                      No entries yet. Start your flow.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  ))}
+                </Reorder.Group>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16 text-muted-foreground/50"
+                >
+                  <p className="text-sm italic font-light">
+                    No entries yet. Start your flow.
+                  </p>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -409,6 +426,6 @@ export default function DashboardPage() {
         onSave={handleGoalSave}
         currentGoal={dailyGoal}
       />
-    </div>
+    </PageTransition>
   );
 }

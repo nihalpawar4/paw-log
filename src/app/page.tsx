@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import PageTransition from "@/components/PageTransition";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import {
@@ -82,7 +83,7 @@ export default function LoginPage() {
   if (user) return null;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
+    <PageTransition className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* ─── Background ─── */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-foreground/[0.03] via-transparent to-transparent" />
@@ -304,6 +305,6 @@ export default function LoginPage() {
           </p>
         </div>
       </footer>
-    </div>
+    </PageTransition>
   );
 }
