@@ -26,7 +26,7 @@ import EntryCard from "@/components/EntryCard";
 import MiniChart from "@/components/MiniChart";
 import RadialProgress from "@/components/RadialProgress";
 import GoalDialog from "@/components/GoalDialog";
-import SessionTimer from "@/components/SessionTimer";
+
 import ZenSkeleton from "@/components/ZenSkeleton";
 import {
   Plus,
@@ -45,8 +45,7 @@ export default function DashboardPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [logOpen, setLogOpen] = useState(false);
   const [goalOpen, setGoalOpen] = useState(false);
-  const [timerMinutes, setTimerMinutes] = useState<number | undefined>(undefined);
-  const [timerSeconds, setTimerSeconds] = useState<number | undefined>(undefined);
+
   const [editEntry, setEditEntry] = useState<Entry | null>(null);
 
   // Redirect if not authenticated
@@ -295,23 +294,6 @@ export default function DashboardPage() {
             </motion.div>
           </div>
 
-          {/* Session Timer */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.28, duration: 0.5 }}
-            className="mb-8"
-          >
-            <SessionTimer
-              onSaveTime={(mins, secs) => {
-                setTimerMinutes(mins);
-                setTimerSeconds(secs);
-                setEditEntry(null);
-                setLogOpen(true);
-              }}
-            />
-          </motion.div>
-
           {/* Streak Quote */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -415,13 +397,9 @@ export default function DashboardPage() {
         onClose={() => {
           setLogOpen(false);
           setEditEntry(null);
-          setTimerMinutes(undefined);
-          setTimerSeconds(undefined);
         }}
         onSave={handleSaveEntry}
         editEntry={editEntry}
-        prefillMinutes={timerMinutes}
-        prefillSeconds={timerSeconds}
       />
 
       {/* Goal Dialog */}
