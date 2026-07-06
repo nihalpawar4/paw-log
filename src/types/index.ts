@@ -5,13 +5,13 @@ export interface Entry {
   id: string;
   userId: string;
   date: Timestamp;
+  time: string; // e.g. "14:30" or "2:30 PM"
+  brand: string;
+  show: string;
   minutesCompleted: number;
   secondsCompleted: number;
   totalSeconds: number; // auto-calculated: minutes * 60 + seconds
-  topic: string;
-  description: string;
-  timeGiven: string; // e.g. "2 hours" or "by EOD"
-  notes?: string;
+  corrections: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -19,12 +19,12 @@ export interface Entry {
 /** Shape used when creating a new entry (before Firestore auto-ids) */
 export interface EntryFormData {
   date: Date;
+  time: string;
+  brand: string;
+  show: string;
   minutesCompleted: number;
   secondsCompleted: number;
-  topic: string;
-  description: string;
-  timeGiven: string;
-  notes?: string;
+  corrections: string;
 }
 
 /** User profile from Firebase Auth */
@@ -47,7 +47,7 @@ export interface AnalyticsSummary {
   totalMinutesMonth: number;
   totalMinutesAllTime: number;
   averageDailyMinutes: number;
-  topTopics: { topic: string; count: number; totalMinutes: number }[];
+  topBrands: { brand: string; count: number; totalMinutes: number }[];
   totalEntries: number;
   currentStreak: number;
   longestStreak: number;

@@ -30,24 +30,20 @@ export function exportAsCSV(entries: Entry[], range: ExportRange): void {
   const filtered = filterByRange(entries, range);
   const headers = [
     "Date",
-    "Minutes",
-    "Seconds",
-    "Total (MM:SS)",
-    "Topic",
-    "Description",
-    "Time Given",
-    "Notes",
+    "Time",
+    "Brand",
+    "Show",
+    "Duration (MM:SS)",
+    "Corrections",
   ];
 
   const rows = filtered.map((e) => [
     format(e.date.toDate(), "yyyy-MM-dd"),
-    e.minutesCompleted.toString(),
-    e.secondsCompleted.toString(),
+    `"${e.time || ""}"`,
+    `"${(e.brand || "").replace(/"/g, '""')}"`,
+    `"${(e.show || "").replace(/"/g, '""')}"`,
     formatTime(e.totalSeconds),
-    `"${e.topic}"`,
-    `"${e.description.replace(/"/g, '""')}"`,
-    `"${e.timeGiven}"`,
-    `"${(e.notes || "").replace(/"/g, '""')}"`,
+    `"${(e.corrections || "").replace(/"/g, '""')}"`,
   ]);
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -66,7 +62,7 @@ export async function exportAsPDF(
   const { default: autoTable } = await import("jspdf-autotable");
 
   const filtered = filterByRange(entries, range);
-  const doc = new jsPDF();
+  const doc = new jsPDF({ orientation: "landscape" });
 
   // Header
   doc.setFontSize(28);
@@ -89,24 +85,27 @@ export async function exportAsPDF(
   doc.text(`Total Entries: ${filtered.length}`, 20, 66);
 
   const totalSeconds = filtered.reduce((sum, e) => sum + e.totalSeconds, 0);
-  doc.text(`Total Time: ${formatTime(totalSeconds)}`, 20, 73);
+  doc.text(`Total Duration: ${formatTime(totalSeconds)}`, 20, 73);
 
   // Separator line
   doc.setDrawColor(200);
-  doc.line(20, 78, 190, 78);
+  doc.line(20, 78, 275, 78);
 
   // Table
   autoTable(doc, {
     startY: 85,
-    head: [["Date", "Time", "Topic", "Description", "Given"]],
+    head: [["Date", "Time", "Brand", "Show", "Duration", "Corrections"]],
     body: filtered.map((e) => [
       format(e.date.toDate(), "MMM d, yyyy"),
+      e.time || "-",
+      e.brand || "-",
+      e.show || "-",
       formatTime(e.totalSeconds),
-      e.topic,
-      e.description.length > 40
-        ? e.description.substring(0, 40) + "..."
-        : e.description,
-      e.timeGiven,
+      e.corrections
+        ? e.corrections.length > 50
+          ? e.corrections.substring(0, 50) + "..."
+          : e.corrections
+        : "-",
     ]),
     styles: {
       fontSize: 9,
@@ -123,6 +122,14 @@ export async function exportAsPDF(
       fillColor: [248, 248, 248],
     },
     theme: "grid",
+    columnStyles: {
+      0: { cellWidth: 35 },
+      1: { cellWidth: 25 },
+      2: { cellWidth: 40 },
+      3: { cellWidth: 45 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: "auto" },
+    },
   });
 
   doc.save(`myregister-report-${range}-${format(new Date(), "yyyy-MM-dd")}.pdf`);
@@ -140,13 +147,11 @@ export async function exportAsExcel(
 
   const data = filtered.map((e) => ({
     Date: format(e.date.toDate(), "yyyy-MM-dd"),
-    Minutes: e.minutesCompleted,
-    Seconds: e.secondsCompleted,
-    "Total (MM:SS)": formatTime(e.totalSeconds),
-    Topic: e.topic,
-    Description: e.description,
-    "Time Given": e.timeGiven,
-    Notes: e.notes || "",
+    Time: e.time || "",
+    Brand: e.brand || "",
+    Show: e.show || "",
+    "Duration (MM:SS)": formatTime(e.totalSeconds),
+    Corrections: e.corrections || "",
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
@@ -156,13 +161,11 @@ export async function exportAsExcel(
   // Set column widths
   ws["!cols"] = [
     { wch: 12 },
-    { wch: 8 },
-    { wch: 8 },
-    { wch: 12 },
-    { wch: 15 },
+    { wch: 10 },
+    { wch: 20 },
+    { wch: 25 },
+    { wch: 14 },
     { wch: 40 },
-    { wch: 15 },
-    { wch: 30 },
   ];
 
   XLSX.writeFile(

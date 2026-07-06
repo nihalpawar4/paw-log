@@ -31,13 +31,13 @@ export async function createEntry(
   const docRef = await addDoc(collection(db, ENTRIES_COLLECTION), {
     userId,
     date: Timestamp.fromDate(data.date),
+    time: data.time || "",
+    brand: data.brand || "",
+    show: data.show || "",
     minutesCompleted: data.minutesCompleted,
     secondsCompleted: data.secondsCompleted,
     totalSeconds,
-    topic: data.topic,
-    description: data.description,
-    timeGiven: data.timeGiven,
-    notes: data.notes || "",
+    corrections: data.corrections || "",
     createdAt: now,
     updatedAt: now,
   });
@@ -55,6 +55,9 @@ export async function updateEntry(
   };
 
   if (data.date !== undefined) updateData.date = Timestamp.fromDate(data.date);
+  if (data.time !== undefined) updateData.time = data.time;
+  if (data.brand !== undefined) updateData.brand = data.brand;
+  if (data.show !== undefined) updateData.show = data.show;
   if (data.minutesCompleted !== undefined)
     updateData.minutesCompleted = data.minutesCompleted;
   if (data.secondsCompleted !== undefined)
@@ -67,10 +70,7 @@ export async function updateEntry(
     const secs = data.secondsCompleted ?? 0;
     updateData.totalSeconds = mins * 60 + secs;
   }
-  if (data.topic !== undefined) updateData.topic = data.topic;
-  if (data.description !== undefined) updateData.description = data.description;
-  if (data.timeGiven !== undefined) updateData.timeGiven = data.timeGiven;
-  if (data.notes !== undefined) updateData.notes = data.notes;
+  if (data.corrections !== undefined) updateData.corrections = data.corrections;
 
   await updateDoc(doc(db, ENTRIES_COLLECTION, entryId), updateData);
 }

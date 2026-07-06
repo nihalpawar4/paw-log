@@ -5,7 +5,7 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { Entry } from "@/types";
 import { formatTime } from "@/lib/analytics";
 import { format } from "date-fns";
-import { Tag, FileText, Timer, Edit3, Trash2, GripVertical } from "lucide-react";
+import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText } from "lucide-react";
 
 interface EntryCardProps {
   entry: Entry;
@@ -40,7 +40,7 @@ export default function EntryCard({
         ${compact ? "p-4" : "p-4 sm:p-6"}
       `}
     >
-      {/* Top Row: Date + Duration */}
+      {/* Top Row: Date + Time */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           {/* Drag handle — only in draggable mode */}
@@ -59,6 +59,15 @@ export default function EntryCard({
           <span className="text-muted-foreground text-xs">
             {format(entry.date.toDate(), "EEEE")}
           </span>
+          {entry.time && (
+            <>
+              <span className="text-border">·</span>
+              <span className="text-muted-foreground text-xs flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {entry.time}
+              </span>
+            </>
+          )}
         </div>
 
         {/* Actions */}
@@ -93,32 +102,31 @@ export default function EntryCard({
         </span>
       </div>
 
-      {/* Topic Badge */}
-      <div className="flex items-center gap-2 mb-3">
-        <Tag className="h-3 w-3 text-muted-foreground" />
-        <span className="text-sm text-foreground/70 font-medium">{entry.topic}</span>
-      </div>
+      {/* Brand Badge */}
+      {entry.brand && (
+        <div className="flex items-center gap-2 mb-2">
+          <Tag className="h-3 w-3 text-muted-foreground" />
+          <span className="text-sm text-foreground/70 font-medium">{entry.brand}</span>
+        </div>
+      )}
 
-      {/* Description — italic */}
-      <p className="text-sm text-muted-foreground italic leading-relaxed mb-3">
-        &ldquo;{entry.description}&rdquo;
-      </p>
+      {/* Show Badge */}
+      {entry.show && (
+        <div className="flex items-center gap-2 mb-2">
+          <Tv className="h-3 w-3 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground italic">{entry.show}</span>
+        </div>
+      )}
 
-      {/* Bottom Row: Time Given + Notes */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground/70">
-        {entry.timeGiven && (
-          <div className="flex items-center gap-1.5">
-            <Timer className="h-3 w-3" />
-            <span>{entry.timeGiven}</span>
-          </div>
-        )}
-        {entry.notes && (
+      {/* Bottom Row: Corrections */}
+      {entry.corrections && (
+        <div className="flex items-center gap-4 text-xs text-muted-foreground/70 mt-2">
           <div className="flex items-center gap-1.5">
             <FileText className="h-3 w-3" />
-            <span className="truncate max-w-[150px]">{entry.notes}</span>
+            <span className="truncate max-w-[250px]">{entry.corrections}</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 

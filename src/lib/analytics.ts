@@ -97,18 +97,19 @@ export function calculateAnalytics(entries: Entry[]): AnalyticsSummary {
   const averageDailySeconds =
     uniqueDays > 0 ? totalSecondsAllTime / uniqueDays : 0;
 
-  // Top topics
-  const topicMap = new Map<string, { count: number; totalSeconds: number }>();
+  // Top brands
+  const brandMap = new Map<string, { count: number; totalSeconds: number }>();
   entries.forEach((e) => {
-    const existing = topicMap.get(e.topic) || { count: 0, totalSeconds: 0 };
-    topicMap.set(e.topic, {
+    const brandName = e.brand || "Unknown";
+    const existing = brandMap.get(brandName) || { count: 0, totalSeconds: 0 };
+    brandMap.set(brandName, {
       count: existing.count + 1,
       totalSeconds: existing.totalSeconds + e.totalSeconds,
     });
   });
-  const topTopics = Array.from(topicMap.entries())
-    .map(([topic, data]) => ({
-      topic,
+  const topBrands = Array.from(brandMap.entries())
+    .map(([brand, data]) => ({
+      brand,
       count: data.count,
       totalMinutes: Math.round(data.totalSeconds / 60),
     }))
@@ -124,7 +125,7 @@ export function calculateAnalytics(entries: Entry[]): AnalyticsSummary {
     totalMinutesMonth: Math.round(totalSecondsMonth / 60),
     totalMinutesAllTime: Math.round(totalSecondsAllTime / 60),
     averageDailyMinutes: Math.round(averageDailySeconds / 60),
-    topTopics,
+    topBrands,
     totalEntries: entries.length,
     currentStreak: streakData.current,
     longestStreak: streakData.longest,

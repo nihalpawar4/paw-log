@@ -36,7 +36,7 @@ export default function HistoryPage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [topicFilter, setTopicFilter] = useState<string | null>(null);
+  const [brandFilter, setBrandFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [logOpen, setLogOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<Entry | null>(null);
@@ -59,26 +59,26 @@ export default function HistoryPage() {
   const filtered = useMemo(() => {
     let result = entries;
 
-    if (topicFilter) {
-      result = result.filter((e) => e.topic === topicFilter);
+    if (brandFilter) {
+      result = result.filter((e) => e.brand === brandFilter);
     }
 
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
         (e) =>
-          e.topic.toLowerCase().includes(q) ||
-          e.description.toLowerCase().includes(q) ||
-          (e.notes || "").toLowerCase().includes(q)
+          (e.brand || "").toLowerCase().includes(q) ||
+          (e.show || "").toLowerCase().includes(q) ||
+          (e.corrections || "").toLowerCase().includes(q)
       );
     }
 
     return result;
-  }, [entries, search, topicFilter]);
+  }, [entries, search, brandFilter]);
 
-  // Unique topics from entries
-  const uniqueTopics = useMemo(
-    () => Array.from(new Set(entries.map((e) => e.topic))),
+  // Unique brands from entries
+  const uniqueBrands = useMemo(
+    () => Array.from(new Set(entries.map((e) => e.brand).filter(Boolean))),
     [entries]
   );
 
@@ -146,39 +146,39 @@ export default function HistoryPage() {
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search topics, descriptions..."
+                placeholder="Search brands, shows, corrections..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="bg-card border-border text-foreground pl-10 h-11"
               />
             </div>
 
-            {/* Topic Filters + View Toggle */}
+            {/* Brand Filters + View Toggle */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
                 <button
                   type="button"
                   className={`px-2.5 py-1 rounded-full text-[10px] tracking-wider transition-all duration-200 border shrink-0 ${
-                    topicFilter === null
+                    brandFilter === null
                       ? "bg-foreground text-background border-foreground"
                       : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground/70"
                   }`}
-                  onClick={() => setTopicFilter(null)}
+                  onClick={() => setBrandFilter(null)}
                 >
                   All
                 </button>
-                {uniqueTopics.map((t) => (
+                {uniqueBrands.map((b) => (
                   <button
-                    key={t}
+                    key={b}
                     type="button"
                     className={`px-2.5 py-1 rounded-full text-[10px] tracking-wider transition-all duration-200 border shrink-0 ${
-                      topicFilter === t
+                      brandFilter === b
                         ? "bg-foreground text-background border-foreground"
                         : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground/70"
                     }`}
-                    onClick={() => setTopicFilter(t === topicFilter ? null : t)}
+                    onClick={() => setBrandFilter(b === brandFilter ? null : b)}
                   >
-                    {t}
+                    {b}
                   </button>
                 ))}
               </div>
@@ -232,7 +232,7 @@ export default function HistoryPage() {
                     className="text-center py-20"
                   >
                     <p className="text-sm text-muted-foreground/50 italic">
-                      {search || topicFilter
+                      {search || brandFilter
                         ? "No entries match your search."
                         : "Your journal awaits its first entry."}
                     </p>
@@ -250,7 +250,7 @@ export default function HistoryPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    {["Date", "Time", "Topic", "Description", "Given", ""].map(
+                    {["Date", "Time", "Brand", "Show", "Duration", "Corrections", ""].map(
                       (h) => (
                         <th
                           key={h}
@@ -275,17 +275,20 @@ export default function HistoryPage() {
                         <td className="py-3.5 px-3 text-sm text-muted-foreground whitespace-nowrap">
                           {format(entry.date.toDate(), "MMM d")}
                         </td>
+                        <td className="py-3.5 px-3 text-sm text-muted-foreground whitespace-nowrap">
+                          {entry.time || "-"}
+                        </td>
+                        <td className="py-3.5 px-3 text-sm text-muted-foreground">
+                          {entry.brand || "-"}
+                        </td>
+                        <td className="py-3.5 px-3 text-sm text-muted-foreground">
+                          {entry.show || "-"}
+                        </td>
                         <td className="py-3.5 px-3 text-sm text-foreground font-light whitespace-nowrap">
                           {formatTime(entry.totalSeconds)}
                         </td>
-                        <td className="py-3.5 px-3 text-sm text-muted-foreground">
-                          {entry.topic}
-                        </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground/70 italic max-w-[200px] truncate">
-                          {entry.description}
-                        </td>
-                        <td className="py-3.5 px-3 text-sm text-muted-foreground/70 whitespace-nowrap">
-                          {entry.timeGiven}
+                          {entry.corrections || "-"}
                         </td>
                         <td className="py-3.5 px-3">
                           <div className="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">

@@ -20,7 +20,6 @@ import {
 import { CalendarIcon, Save, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { EntryFormData, Entry } from "@/types";
-import { TOPIC_SUGGESTIONS } from "@/lib/quotes";
 import { toast } from "sonner";
 
 interface LogEntryFormProps {
@@ -49,6 +48,9 @@ function LogEntryFormInner({
   const [date, setDate] = useState<Date>(() =>
     editEntry ? editEntry.date.toDate() : new Date()
   );
+  const [time, setTime] = useState(() => editEntry?.time ?? "");
+  const [brand, setBrand] = useState(() => editEntry?.brand ?? "");
+  const [show, setShow] = useState(() => editEntry?.show ?? "");
   const [minutes, setMinutes] = useState(() =>
     editEntry
       ? editEntry.minutesCompleted.toString()
@@ -59,45 +61,31 @@ function LogEntryFormInner({
       ? editEntry.secondsCompleted.toString()
       : ""
   );
-  const [topic, setTopic] = useState(() => editEntry?.topic ?? "");
-  const [description, setDescription] = useState(() => editEntry?.description ?? "");
-  const [notes, setNotes] = useState(() => editEntry?.notes ?? "");
+  const [corrections, setCorrections] = useState(() => editEntry?.corrections ?? "");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const resetForm = useCallback(() => {
     setDate(new Date());
+    setTime("");
+    setBrand("");
+    setShow("");
     setMinutes("");
     setSeconds("");
-    setTopic("");
-    setDescription("");
-    setNotes("");
+    setCorrections("");
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!minutes && !seconds) {
-      toast.error("Please enter the video duration");
-      return;
-    }
-    if (!topic.trim()) {
-      toast.error("Please enter a topic");
-      return;
-    }
-    if (!description.trim()) {
-      toast.error("Please enter a description");
-      return;
-    }
-
     setSaving(true);
     try {
       await onSave({
         date,
+        time: time.trim(),
+        brand: brand.trim(),
+        show: show.trim(),
         minutesCompleted: parseInt(minutes) || 0,
         secondsCompleted: parseInt(seconds) || 0,
-        topic: topic.trim(),
-        description: description.trim(),
-        timeGiven: "",
-        notes: notes.trim(),
+        corrections: corrections.trim(),
       });
       resetForm();
       onClose();
@@ -107,7 +95,7 @@ function LogEntryFormInner({
     } finally {
       setSaving(false);
     }
-  }, [date, minutes, seconds, topic, description, notes, onSave, onClose, editEntry, resetForm]);
+  }, [date, time, brand, show, minutes, seconds, corrections, onSave, onClose, editEntry, resetForm]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -157,6 +145,45 @@ function LogEntryFormInner({
               </Popover>
             </div>
 
+            {/* Time */}
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Time
+              </label>
+              <Input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="bg-secondary border-border text-foreground h-11"
+              />
+            </div>
+
+            {/* Brand */}
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Brand
+              </label>
+              <Input
+                placeholder="Enter brand name"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                className="bg-secondary border-border text-foreground h-11"
+              />
+            </div>
+
+            {/* Show */}
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Show
+              </label>
+              <Input
+                placeholder="Enter show name"
+                value={show}
+                onChange={(e) => setShow(e.target.value)}
+                className="bg-secondary border-border text-foreground h-11"
+              />
+            </div>
+
             {/* Duration */}
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -203,71 +230,16 @@ function LogEntryFormInner({
               </div>
             </div>
 
-            {/* Topic */}
+            {/* Corrections */}
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                Topic
-              </label>
-              <Input
-                placeholder="What did you edit?"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="bg-secondary border-border text-foreground h-11"
-              />
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {TOPIC_SUGGESTIONS.slice(0, 8).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    className={`px-2.5 py-1 rounded-full text-[10px] tracking-wider transition-all duration-200 border ${
-                      topic === t
-                        ? "bg-foreground text-background border-foreground"
-                        : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground/70"
-                    }`}
-                    onClick={() => setTopic(t)}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                Description
+                Corrections
               </label>
               <Textarea
-                placeholder="What story did you tell?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Any corrections?"
+                value={corrections}
+                onChange={(e) => setCorrections(e.target.value)}
                 className="bg-secondary border-border text-foreground min-h-[70px] resize-none"
-              />
-              {description && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-sm italic text-muted-foreground pl-1"
-                >
-                  &ldquo;{description}&rdquo;
-                </motion.p>
-              )}
-            </div>
-
-
-            {/* Notes (optional) */}
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                Notes{" "}
-                <span className="text-muted-foreground/50 normal-case tracking-normal">
-                  (optional)
-                </span>
-              </label>
-              <Textarea
-                placeholder="Any thoughts?"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="bg-secondary border-border text-foreground min-h-[50px] resize-none"
               />
             </div>
 

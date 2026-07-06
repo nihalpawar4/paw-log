@@ -186,7 +186,7 @@ export default function AnalyticsPage() {
             </motion.div>
           </div>
 
-          {/* Top Topics */}
+          {/* Top Brands */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -194,21 +194,21 @@ export default function AnalyticsPage() {
             className="bg-card border border-border rounded-2xl p-4 sm:p-6 hover:border-foreground/15 transition-colors duration-300"
           >
             <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5 block">
-              Top Topics
+              Top Brands
             </span>
 
-            {analytics.topTopics.length > 0 ? (
+            {analytics.topBrands.length > 0 ? (
               <div className="space-y-3">
-                {analytics.topTopics.slice(0, 8).map((topic, i) => {
-                  const maxMinutes = analytics.topTopics[0]?.totalMinutes || 1;
+                {analytics.topBrands.slice(0, 8).map((brand, i) => {
+                  const maxMinutes = analytics.topBrands[0]?.totalMinutes || 1;
                   const width = Math.max(
                     8,
-                    (topic.totalMinutes / maxMinutes) * 100
+                    (brand.totalMinutes / maxMinutes) * 100
                   );
 
                   return (
                     <motion.div
-                      key={topic.topic}
+                      key={brand.brand}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.05 * i + 0.5, duration: 0.3 }}
@@ -216,11 +216,11 @@ export default function AnalyticsPage() {
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm text-muted-foreground font-light group-hover:text-foreground transition-colors duration-200">
-                          {topic.topic}
+                          {brand.brand}
                         </span>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
-                          <span>{topic.count} entries</span>
-                          <span>{topic.totalMinutes} min</span>
+                          <span>{brand.count} entries</span>
+                          <span>{brand.totalMinutes} min</span>
                         </div>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -241,7 +241,7 @@ export default function AnalyticsPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground/50 italic py-8 text-center">
-                Start logging to see your top topics
+                Start logging to see your top brands
               </p>
             )}
           </motion.div>
