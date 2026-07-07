@@ -40,10 +40,10 @@ export function exportAsCSV(entries: Entry[], range: ExportRange): void {
   const rows = filtered.map((e) => [
     format(e.date.toDate(), "yyyy-MM-dd"),
     `"${e.time || ""}"`,
-    `"${(e.brand || "").replace(/"/g, '""')}"`,
+    `"${(e.brand || e.topic || "").replace(/"/g, '""')}"`,
     `"${(e.show || "").replace(/"/g, '""')}"`,
     formatTime(e.totalSeconds),
-    `"${(e.corrections || "").replace(/"/g, '""')}"`,
+    `"${(e.corrections || e.description || e.notes || "").replace(/"/g, '""')}"`,
   ]);
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -95,18 +95,20 @@ export async function exportAsPDF(
   autoTable(doc, {
     startY: 85,
     head: [["Date", "Time", "Brand", "Show", "Duration", "Corrections"]],
-    body: filtered.map((e) => [
+    body: filtered.map((e) => {
+      const corr = e.corrections || e.description || e.notes || "";
+      return [
       format(e.date.toDate(), "MMM d, yyyy"),
       e.time || "-",
-      e.brand || "-",
+      e.brand || e.topic || "-",
       e.show || "-",
       formatTime(e.totalSeconds),
-      e.corrections
-        ? e.corrections.length > 50
-          ? e.corrections.substring(0, 50) + "..."
-          : e.corrections
+      corr
+        ? corr.length > 50
+          ? corr.substring(0, 50) + "..."
+          : corr
         : "-",
-    ]),
+    ];}),
     styles: {
       fontSize: 9,
       cellPadding: 4,
@@ -148,10 +150,10 @@ export async function exportAsExcel(
   const data = filtered.map((e) => ({
     Date: format(e.date.toDate(), "yyyy-MM-dd"),
     Time: e.time || "",
-    Brand: e.brand || "",
+    Brand: e.brand || e.topic || "",
     Show: e.show || "",
     "Duration (MM:SS)": formatTime(e.totalSeconds),
-    Corrections: e.corrections || "",
+    Corrections: e.corrections || e.description || e.notes || "",
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);

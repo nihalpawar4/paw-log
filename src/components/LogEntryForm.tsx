@@ -49,7 +49,7 @@ function LogEntryFormInner({
     editEntry ? editEntry.date.toDate() : new Date()
   );
   const [time, setTime] = useState(() => editEntry?.time ?? "");
-  const [brand, setBrand] = useState(() => editEntry?.brand ?? "");
+  const [brand, setBrand] = useState(() => editEntry?.brand || editEntry?.topic || "");
   const [show, setShow] = useState(() => editEntry?.show ?? "");
   const [minutes, setMinutes] = useState(() =>
     editEntry
@@ -61,7 +61,7 @@ function LogEntryFormInner({
       ? editEntry.secondsCompleted.toString()
       : ""
   );
-  const [corrections, setCorrections] = useState(() => editEntry?.corrections ?? "");
+  const [corrections, setCorrections] = useState(() => editEntry?.corrections || editEntry?.notes || "");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 

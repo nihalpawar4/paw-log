@@ -60,7 +60,7 @@ export default function HistoryPage() {
     let result = entries;
 
     if (brandFilter) {
-      result = result.filter((e) => e.brand === brandFilter);
+      result = result.filter((e) => (e.brand || e.topic) === brandFilter);
     }
 
     if (search.trim()) {
@@ -68,17 +68,20 @@ export default function HistoryPage() {
       result = result.filter(
         (e) =>
           (e.brand || "").toLowerCase().includes(q) ||
+          (e.topic || "").toLowerCase().includes(q) ||
           (e.show || "").toLowerCase().includes(q) ||
-          (e.corrections || "").toLowerCase().includes(q)
+          (e.description || "").toLowerCase().includes(q) ||
+          (e.corrections || "").toLowerCase().includes(q) ||
+          (e.notes || "").toLowerCase().includes(q)
       );
     }
 
     return result;
   }, [entries, search, brandFilter]);
 
-  // Unique brands from entries
+  // Unique brands/topics from entries
   const uniqueBrands = useMemo(
-    () => Array.from(new Set(entries.map((e) => e.brand).filter(Boolean))),
+    () => Array.from(new Set(entries.map((e) => e.brand || e.topic).filter(Boolean))),
     [entries]
   );
 
@@ -279,7 +282,7 @@ export default function HistoryPage() {
                           {entry.time || "-"}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground">
-                          {entry.brand || "-"}
+                          {entry.brand || entry.topic || "-"}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground">
                           {entry.show || "-"}
@@ -288,7 +291,7 @@ export default function HistoryPage() {
                           {formatTime(entry.totalSeconds)}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground/70 italic max-w-[200px] truncate">
-                          {entry.corrections || "-"}
+                          {entry.corrections || entry.description || entry.notes || "-"}
                         </td>
                         <td className="py-3.5 px-3">
                           <div className="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">

@@ -102,11 +102,11 @@ export default function EntryCard({
         </span>
       </div>
 
-      {/* Brand Badge */}
-      {entry.brand && (
+      {/* Brand or legacy Topic Badge */}
+      {(entry.brand || entry.topic) && (
         <div className="flex items-center gap-2 mb-2">
           <Tag className="h-3 w-3 text-muted-foreground" />
-          <span className="text-sm text-foreground/70 font-medium">{entry.brand}</span>
+          <span className="text-sm text-foreground/70 font-medium">{entry.brand || entry.topic}</span>
         </div>
       )}
 
@@ -118,15 +118,28 @@ export default function EntryCard({
         </div>
       )}
 
-      {/* Bottom Row: Corrections */}
-      {entry.corrections && (
-        <div className="flex items-center gap-4 text-xs text-muted-foreground/70 mt-2">
+      {/* Legacy Description (old entries) */}
+      {entry.description && (
+        <p className="text-sm text-muted-foreground italic leading-relaxed mb-2">
+          &ldquo;{entry.description}&rdquo;
+        </p>
+      )}
+
+      {/* Bottom Row: Corrections / legacy notes */}
+      <div className="flex items-center gap-4 text-xs text-muted-foreground/70 mt-2">
+        {entry.corrections && (
           <div className="flex items-center gap-1.5">
             <FileText className="h-3 w-3" />
             <span className="truncate max-w-[250px]">{entry.corrections}</span>
           </div>
-        </div>
-      )}
+        )}
+        {entry.notes && (
+          <div className="flex items-center gap-1.5">
+            <FileText className="h-3 w-3" />
+            <span className="truncate max-w-[150px]">{entry.notes}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 

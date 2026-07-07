@@ -5,13 +5,19 @@ export interface Entry {
   id: string;
   userId: string;
   date: Timestamp;
-  time: string; // e.g. "14:30" or "2:30 PM"
-  brand: string;
-  show: string;
+  // New fields
+  time?: string; // e.g. "14:30" or "2:30 PM"
+  brand?: string;
+  show?: string;
   minutesCompleted: number;
   secondsCompleted: number;
   totalSeconds: number; // auto-calculated: minutes * 60 + seconds
-  corrections: string;
+  corrections?: string;
+  // Legacy fields (old entries still have these in Firestore)
+  topic?: string;
+  description?: string;
+  timeGiven?: string;
+  notes?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

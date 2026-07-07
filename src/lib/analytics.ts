@@ -100,7 +100,7 @@ export function calculateAnalytics(entries: Entry[]): AnalyticsSummary {
   // Top brands
   const brandMap = new Map<string, { count: number; totalSeconds: number }>();
   entries.forEach((e) => {
-    const brandName = e.brand || "Unknown";
+    const brandName = e.brand || e.topic || "Unknown";
     const existing = brandMap.get(brandName) || { count: 0, totalSeconds: 0 };
     brandMap.set(brandName, {
       count: existing.count + 1,
