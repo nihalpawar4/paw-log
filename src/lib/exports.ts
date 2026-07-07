@@ -23,28 +23,91 @@ function filterByRange(entries: Entry[], range: ExportRange): Entry[] {
   }
 }
 
+/** Column definition for dynamic export */
+interface ExportColumn {
+  key: string;
+  header: string;
+  getValue: (e: Entry) => string;
+  colWidth: number; // for Excel
+  pdfWidth?: number; // for PDF
+}
+
+/**
+ * Get all possible columns and filter to only those that have data
+ * in at least one entry.
+ */
+function getActiveColumns(entries: Entry[]): ExportColumn[] {
+  const allColumns: ExportColumn[] = [
+    {
+      key: "date",
+      header: "Date",
+      getValue: (e) => format(e.date.toDate(), "yyyy-MM-dd"),
+      colWidth: 12,
+      pdfWidth: 30,
+    },
+    {
+      key: "time",
+      header: "Time",
+      getValue: (e) => e.time || "",
+      colWidth: 10,
+      pdfWidth: 22,
+    },
+    {
+      key: "brand",
+      header: "Brand",
+      getValue: (e) => e.brand || e.topic || "",
+      colWidth: 20,
+      pdfWidth: 40,
+    },
+    {
+      key: "show",
+      header: "Show",
+      getValue: (e) => e.show || "",
+      colWidth: 25,
+      pdfWidth: 45,
+    },
+    {
+      key: "duration",
+      header: "Duration",
+      getValue: (e) => formatTime(e.totalSeconds),
+      colWidth: 14,
+      pdfWidth: 25,
+    },
+    {
+      key: "corrections",
+      header: "Corrections",
+      getValue: (e) => e.corrections || e.description || e.notes || "",
+      colWidth: 40,
+    },
+  ];
+
+  // Always include Date and Duration; for others, only include if at least one entry has data
+  return allColumns.filter((col) => {
+    if (col.key === "date" || col.key === "duration") return true;
+    return entries.some((e) => {
+      const val = col.getValue(e);
+      return val && val.trim().length > 0;
+    });
+  });
+}
+
 /**
  * Export entries as CSV and trigger download.
  */
 export function exportAsCSV(entries: Entry[], range: ExportRange): void {
   const filtered = filterByRange(entries, range);
-  const headers = [
-    "Date",
-    "Time",
-    "Brand",
-    "Show",
-    "Duration (MM:SS)",
-    "Corrections",
-  ];
+  const columns = getActiveColumns(filtered);
 
-  const rows = filtered.map((e) => [
-    format(e.date.toDate(), "yyyy-MM-dd"),
-    `"${e.time || ""}"`,
-    `"${(e.brand || e.topic || "").replace(/"/g, '""')}"`,
-    `"${(e.show || "").replace(/"/g, '""')}"`,
-    formatTime(e.totalSeconds),
-    `"${(e.corrections || e.description || e.notes || "").replace(/"/g, '""')}"`,
-  ]);
+  const headers = columns.map((c) => c.header);
+
+  const rows = filtered.map((e) =>
+    columns.map((col) => {
+      const val = col.getValue(e);
+      // Wrap in quotes and escape internal quotes for CSV
+      if (col.key === "date" || col.key === "duration") return val;
+      return `"${val.replace(/"/g, '""')}"`;
+    })
+  );
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
   downloadFile(csv, `myregister-export-${range}-${format(new Date(), "yyyy-MM-dd")}.csv`, "text/csv");
@@ -62,7 +125,12 @@ export async function exportAsPDF(
   const { default: autoTable } = await import("jspdf-autotable");
 
   const filtered = filterByRange(entries, range);
-  const doc = new jsPDF({ orientation: "landscape" });
+  const columns = getActiveColumns(filtered);
+
+  // Use landscape if many columns, portrait if few
+  const orientation = columns.length > 4 ? "landscape" : "portrait";
+  const doc = new jsPDF({ orientation });
+  const pageWidth = orientation === "landscape" ? 297 : 210;
 
   // Header
   doc.setFontSize(28);
@@ -89,26 +157,31 @@ export async function exportAsPDF(
 
   // Separator line
   doc.setDrawColor(200);
-  doc.line(20, 78, 275, 78);
+  doc.line(20, 78, pageWidth - 20, 78);
+
+  // Build column styles dynamically
+  const columnStyles: Record<number, { cellWidth: number | "auto" }> = {};
+  columns.forEach((col, i) => {
+    if (col.pdfWidth) {
+      columnStyles[i] = { cellWidth: col.pdfWidth };
+    } else {
+      columnStyles[i] = { cellWidth: "auto" };
+    }
+  });
 
   // Table
   autoTable(doc, {
     startY: 85,
-    head: [["Date", "Time", "Brand", "Show", "Duration", "Corrections"]],
-    body: filtered.map((e) => {
-      const corr = e.corrections || e.description || e.notes || "";
-      return [
-      format(e.date.toDate(), "MMM d, yyyy"),
-      e.time || "-",
-      e.brand || e.topic || "-",
-      e.show || "-",
-      formatTime(e.totalSeconds),
-      corr
-        ? corr.length > 50
-          ? corr.substring(0, 50) + "..."
-          : corr
-        : "-",
-    ];}),
+    head: [columns.map((c) => c.header)],
+    body: filtered.map((e) =>
+      columns.map((col) => {
+        const val = col.getValue(e);
+        if (col.key === "corrections" && val.length > 60) {
+          return val.substring(0, 60) + "...";
+        }
+        return val || "-";
+      })
+    ),
     styles: {
       fontSize: 9,
       cellPadding: 4,
@@ -124,14 +197,7 @@ export async function exportAsPDF(
       fillColor: [248, 248, 248],
     },
     theme: "grid",
-    columnStyles: {
-      0: { cellWidth: 35 },
-      1: { cellWidth: 25 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 45 },
-      4: { cellWidth: 25 },
-      5: { cellWidth: "auto" },
-    },
+    columnStyles,
   });
 
   doc.save(`myregister-report-${range}-${format(new Date(), "yyyy-MM-dd")}.pdf`);
@@ -146,29 +212,22 @@ export async function exportAsExcel(
 ): Promise<void> {
   const XLSX = await import("xlsx");
   const filtered = filterByRange(entries, range);
+  const columns = getActiveColumns(filtered);
 
-  const data = filtered.map((e) => ({
-    Date: format(e.date.toDate(), "yyyy-MM-dd"),
-    Time: e.time || "",
-    Brand: e.brand || e.topic || "",
-    Show: e.show || "",
-    "Duration (MM:SS)": formatTime(e.totalSeconds),
-    Corrections: e.corrections || e.description || e.notes || "",
-  }));
+  const data = filtered.map((e) => {
+    const row: Record<string, string> = {};
+    columns.forEach((col) => {
+      row[col.header] = col.getValue(e);
+    });
+    return row;
+  });
 
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "MyRegister Entries");
 
-  // Set column widths
-  ws["!cols"] = [
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 20 },
-    { wch: 25 },
-    { wch: 14 },
-    { wch: 40 },
-  ];
+  // Set column widths dynamically
+  ws["!cols"] = columns.map((col) => ({ wch: col.colWidth }));
 
   XLSX.writeFile(
     wb,

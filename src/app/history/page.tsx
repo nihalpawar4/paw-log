@@ -81,7 +81,7 @@ export default function HistoryPage() {
 
   // Unique brands/topics from entries
   const uniqueBrands = useMemo(
-    () => Array.from(new Set(entries.map((e) => e.brand || e.topic).filter(Boolean))),
+    () => Array.from(new Set(entries.map((e) => e.brand || e.topic).filter((x): x is string => Boolean(x)))),
     [entries]
   );
 
