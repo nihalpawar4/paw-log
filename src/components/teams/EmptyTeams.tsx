@@ -15,14 +15,14 @@ export default function EmptyTeams({ onCreateTeam, onJoinTeam }: EmptyTeamsProps
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.35 }}
       className="flex flex-col items-center justify-center text-center py-20 px-4"
     >
       {/* Icon */}
       <motion.div
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
         className="w-24 h-24 rounded-full bg-foreground/[0.04] border border-border flex items-center justify-center mb-8"
       >
         <Users className="h-10 w-10 text-muted-foreground/40" />

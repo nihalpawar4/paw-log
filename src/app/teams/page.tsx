@@ -11,6 +11,7 @@ import Navbar from "@/components/Navbar";
 import ZenSkeleton from "@/components/ZenSkeleton";
 import EmptyTeams from "@/components/teams/EmptyTeams";
 import TeamCard from "@/components/teams/TeamCard";
+import TeamsIntroBanner from "@/components/teams/TeamsIntroBanner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -76,6 +77,9 @@ export default function TeamsPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
+      {/* First-time intro banner */}
+      <TeamsIntroBanner />
+
       <PageTransition>
         <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
           <div className="max-w-4xl mx-auto">
@@ -88,9 +92,9 @@ export default function TeamsPage() {
               <>
                 {/* Header */}
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.3 }}
                   className="mb-8 sm:mb-10"
                 >
                   <div className="flex items-start justify-between">
@@ -127,9 +131,9 @@ export default function TeamsPage() {
                 {/* Search */}
                 {teams.length > 2 && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2, delay: 0.05 }}
                     className="mb-6"
                   >
                     <div className="relative">

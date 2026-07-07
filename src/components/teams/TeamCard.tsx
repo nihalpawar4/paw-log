@@ -17,7 +17,7 @@ export default function TeamCard({ team, index = 0 }: TeamCardProps) {
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: index * 0.05, ease: "easeOut" }}
+        transition={{ duration: 0.2, delay: index * 0.03, ease: "easeOut" }}
         className="bg-card border border-border rounded-2xl p-4 sm:p-5 hover:border-foreground/15 hover:bg-accent/50 transition-all duration-300 cursor-pointer group"
       >
         <div className="flex items-center gap-4">
