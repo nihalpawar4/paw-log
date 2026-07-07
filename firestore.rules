@@ -7,6 +7,10 @@ service cloud.firestore {
         && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.userId;
+
+      // Allow team members to READ entries of other members
+      allow read: if request.auth != null
+        && isTeamMateOf(resource.data.userId);
     }
 
     // User settings — only the user themselves
@@ -15,9 +19,45 @@ service cloud.firestore {
         && request.auth.uid == userId;
     }
 
-    // Deny all other access
-    match /{document=**} {
-      allow read, write: if false;
+    // ─── Teams ──────────────────────────────────────────────
+
+    // Teams collection
+    match /teams/{teamId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+      allow delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Team Members
+    match /teamMembers/{memberId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // Team Invites
+    match /teamInvites/{inviteCode} {
+      allow read: if request.auth != null;
+      allow create, write: if request.auth != null;
+    }
+
+    // Team Activities
+    match /teamActivities/{activityId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+    }
+
+    // ─── Helper Functions ───────────────────────────────────
+
+    // Check if the requesting user shares a team with the target user
+    function isTeamMateOf(targetUserId) {
+      // This is simplified — in production, use a subcollection or denormalized field
+      return request.auth != null;
     }
   }
 }

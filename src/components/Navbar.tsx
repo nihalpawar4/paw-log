@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   History,
   BarChart3,
+  Users,
   LogOut,
   PawPrint,
   Sun,
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/history", label: "History", icon: History },
   { href: "/analytics", label: "Insights", icon: BarChart3 },
+  { href: "/teams", label: "Teams", icon: Users },
 ];
 
 export default function Navbar() {
