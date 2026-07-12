@@ -27,7 +27,8 @@ interface LogEntryFormProps {
   onClose: () => void;
   onSave: (data: EntryFormData) => Promise<void>;
   editEntry?: Entry | null;
-
+  teamId?: string;
+  teamName?: string;
 }
 
 /**
@@ -44,11 +45,12 @@ function LogEntryFormInner({
   onClose,
   onSave,
   editEntry,
+  teamId,
+  teamName,
 }: LogEntryFormProps) {
   const [date, setDate] = useState<Date>(() =>
     editEntry ? editEntry.date.toDate() : new Date()
   );
-  const [time, setTime] = useState(() => editEntry?.time ?? "");
   const [brand, setBrand] = useState(() => editEntry?.brand || editEntry?.topic || "");
   const [show, setShow] = useState(() => editEntry?.show ?? "");
   const [minutes, setMinutes] = useState(() =>
@@ -67,7 +69,6 @@ function LogEntryFormInner({
 
   const resetForm = useCallback(() => {
     setDate(new Date());
-    setTime("");
     setBrand("");
     setShow("");
     setMinutes("");
@@ -80,22 +81,22 @@ function LogEntryFormInner({
     try {
       await onSave({
         date,
-        time: time.trim(),
         brand: brand.trim(),
         show: show.trim(),
         minutesCompleted: parseInt(minutes) || 0,
         secondsCompleted: parseInt(seconds) || 0,
         corrections: corrections.trim(),
+        ...(teamId ? { teamId, teamName } : {}),
       });
       resetForm();
       onClose();
-      toast.success(editEntry ? "Entry updated" : "Entry saved to MyRegister ✨");
+      toast.success(editEntry ? "Entry updated" : teamId ? `Entry saved for ${teamName} ✨` : "Entry saved to MyRegister ✨");
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setSaving(false);
     }
-  }, [date, time, brand, show, minutes, seconds, corrections, onSave, onClose, editEntry, resetForm]);
+  }, [date, brand, show, minutes, seconds, corrections, onSave, onClose, editEntry, resetForm, teamId, teamName]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -116,6 +117,16 @@ function LogEntryFormInner({
           </DialogHeader>
 
           <div className="space-y-5">
+            {/* Team Badge */}
+            {teamName && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-foreground/[0.04] border border-border">
+                <span className="text-sm">👥</span>
+                <span className="text-xs text-muted-foreground">
+                  Creating entry for <span className="text-foreground font-medium">{teamName}</span>
+                </span>
+              </div>
+            )}
+
             {/* Date Picker */}
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -143,19 +154,6 @@ function LogEntryFormInner({
                   />
                 </PopoverContent>
               </Popover>
-            </div>
-
-            {/* Time */}
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                Time
-              </label>
-              <Input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="bg-secondary border-border text-foreground h-11"
-              />
             </div>
 
             {/* Brand */}

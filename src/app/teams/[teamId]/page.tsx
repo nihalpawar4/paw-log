@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import PageTransition from "@/components/PageTransition";
@@ -13,10 +13,13 @@ import {
   getUserMembership,
 } from "@/lib/teams";
 import { Team, TeamMember, TeamActivity } from "@/types/teams";
-import { Entry } from "@/types";
+import { Entry, EntryFormData } from "@/types";
+import { createEntry } from "@/lib/firestore";
+import { logEntryActivity } from "@/lib/teams";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
 import ActivityItem from "@/components/teams/ActivityItem";
+import LogEntryForm from "@/components/LogEntryForm";
 import ZenSkeleton from "@/components/ZenSkeleton";
 import {
   Hash,
@@ -26,6 +29,7 @@ import {
   Copy,
   Link2,
   Clock,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -45,6 +49,7 @@ export default function TeamDashboardPage() {
   const [activities, setActivities] = useState<TeamActivity[]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [logOpen, setLogOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/");
@@ -128,6 +133,29 @@ export default function TeamDashboardPage() {
     navigator.clipboard.writeText(link);
     toast.success("Invite link copied!");
   };
+
+  const handleSaveTeamEntry = useCallback(
+    async (data: EntryFormData) => {
+      if (!user || !team) return;
+      await createEntry(user.uid, {
+        ...data,
+        teamId: team.id,
+        teamName: team.name,
+      });
+      // Log activity in the team feed
+      try {
+        await logEntryActivity(
+          team.id,
+          user.uid,
+          user.displayName || "Anonymous",
+          user.photoURL || ""
+        );
+      } catch (e) {
+        console.warn("Failed to log entry activity:", e);
+      }
+    },
+    [user, team]
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -315,6 +343,29 @@ export default function TeamDashboardPage() {
           </div>
         </main>
       </PageTransition>
+
+      {/* FAB — Log Team Entry */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6, duration: 0.4, type: "spring" }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setLogOpen(true)}
+        className="fixed bottom-24 md:bottom-8 right-5 sm:right-8 z-40 w-14 h-14 bg-foreground text-background rounded-2xl flex items-center justify-center shadow-[0_0_30px_var(--foreground,white)/0.1] hover:shadow-[0_0_50px_var(--foreground,white)/0.15] transition-shadow duration-300"
+        aria-label="Log Team Entry"
+      >
+        <Plus className="h-6 w-6" />
+      </motion.button>
+
+      {/* Team Log Form */}
+      <LogEntryForm
+        open={logOpen}
+        onClose={() => setLogOpen(false)}
+        onSave={handleSaveTeamEntry}
+        teamId={team.id}
+        teamName={team.name}
+      />
     </div>
   );
 }

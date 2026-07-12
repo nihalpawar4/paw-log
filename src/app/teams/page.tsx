@@ -63,7 +63,7 @@ export default function TeamsPage() {
     }
   }, [user, joinCode, router]);
 
-  if (authLoading || !user || dataLoading) return <ZenSkeleton />;
+  if (authLoading || !user) return <ZenSkeleton />;
 
   const filtered = search.trim()
     ? teams.filter(
@@ -83,51 +83,61 @@ export default function TeamsPage() {
       <PageTransition>
         <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
           <div className="max-w-4xl mx-auto">
-            {teams.length === 0 ? (
+            {/* Always show header with action buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mb-8 sm:mb-10"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
+                    <em className="font-light not-italic">Teams</em>
+                  </h1>
+                  <p className="text-sm text-muted-foreground italic font-light">
+                    Collaborate and grow together
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setJoinDialogOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="border-border text-muted-foreground hover:text-foreground rounded-xl text-xs"
+                  >
+                    <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                    Join
+                  </Button>
+                  <Button
+                    onClick={() => router.push("/teams/create")}
+                    size="sm"
+                    className="bg-foreground text-background hover:opacity-90 rounded-xl text-xs"
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    Create
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Content area — inline loading or team list */}
+            {dataLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-20 rounded-2xl bg-card border border-border animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : teams.length === 0 ? (
               <EmptyTeams
                 onCreateTeam={() => router.push("/teams/create")}
                 onJoinTeam={() => setJoinDialogOpen(true)}
               />
             ) : (
               <>
-                {/* Header */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mb-8 sm:mb-10"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
-                        <em className="font-light not-italic">Teams</em>
-                      </h1>
-                      <p className="text-sm text-muted-foreground italic font-light">
-                        Collaborate and grow together
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => setJoinDialogOpen(true)}
-                        variant="outline"
-                        size="sm"
-                        className="border-border text-muted-foreground hover:text-foreground rounded-xl text-xs"
-                      >
-                        <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                        Join
-                      </Button>
-                      <Button
-                        onClick={() => router.push("/teams/create")}
-                        size="sm"
-                        className="bg-foreground text-background hover:opacity-90 rounded-xl text-xs"
-                      >
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Create
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-
                 {/* Search */}
                 {teams.length > 2 && (
                   <motion.div

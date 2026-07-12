@@ -8,8 +8,9 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.auth.uid == request.resource.data.userId;
 
-      // Allow team members to READ entries of other members
+      // Allow team members to READ entries tagged with a teamId
       allow read: if request.auth != null
+        && resource.data.teamId != null
         && isTeamMateOf(resource.data.userId);
     }
 
@@ -25,8 +26,11 @@ service cloud.firestore {
     match /teams/{teamId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
+      // Owner can update anything; any authenticated user can update memberCount/updatedAt (for join/leave)
       allow update: if request.auth != null
-        && resource.data.ownerId == request.auth.uid;
+        && (resource.data.ownerId == request.auth.uid
+            || (request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['memberCount', 'updatedAt'])));
       allow delete: if request.auth != null
         && resource.data.ownerId == request.auth.uid;
     }
@@ -44,12 +48,14 @@ service cloud.firestore {
     match /teamInvites/{inviteCode} {
       allow read: if request.auth != null;
       allow create, write: if request.auth != null;
+      allow delete: if request.auth != null;
     }
 
     // Team Activities
     match /teamActivities/{activityId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
+      allow delete: if request.auth != null;
     }
 
     // ─── Helper Functions ───────────────────────────────────

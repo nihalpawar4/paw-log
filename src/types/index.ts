@@ -6,13 +6,16 @@ export interface Entry {
   userId: string;
   date: Timestamp;
   // New fields
-  time?: string; // e.g. "14:30" or "2:30 PM"
+  time?: string; // e.g. "14:30" or "2:30 PM" (legacy, no longer collected)
   brand?: string;
   show?: string;
   minutesCompleted: number;
   secondsCompleted: number;
   totalSeconds: number; // auto-calculated: minutes * 60 + seconds
   corrections?: string;
+  // Team entry fields
+  teamId?: string; // if set, this entry belongs to a team
+  teamName?: string;
   // Legacy fields (old entries still have these in Firestore)
   topic?: string;
   description?: string;
@@ -25,12 +28,13 @@ export interface Entry {
 /** Shape used when creating a new entry (before Firestore auto-ids) */
 export interface EntryFormData {
   date: Date;
-  time: string;
   brand: string;
   show: string;
   minutesCompleted: number;
   secondsCompleted: number;
   corrections: string;
+  teamId?: string;
+  teamName?: string;
 }
 
 /** User profile from Firebase Auth */

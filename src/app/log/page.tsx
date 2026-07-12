@@ -73,7 +73,6 @@ export default function LogPage() {
 
       await createEntry(user.uid, {
         date,
-        time: time.trim(),
         brand: brand.trim(),
         show: show.trim(),
         minutesCompleted: parseInt(minutes) || 0,

@@ -28,10 +28,9 @@ export async function createEntry(
   const totalSeconds = data.minutesCompleted * 60 + data.secondsCompleted;
   const now = Timestamp.now();
 
-  const docRef = await addDoc(collection(db, ENTRIES_COLLECTION), {
+  const entryData: Record<string, unknown> = {
     userId,
     date: Timestamp.fromDate(data.date),
-    time: data.time || "",
     brand: data.brand || "",
     show: data.show || "",
     minutesCompleted: data.minutesCompleted,
@@ -40,7 +39,15 @@ export async function createEntry(
     corrections: data.corrections || "",
     createdAt: now,
     updatedAt: now,
-  });
+  };
+
+  // Tag with team if creating a team entry
+  if (data.teamId) {
+    entryData.teamId = data.teamId;
+    entryData.teamName = data.teamName || "";
+  }
+
+  const docRef = await addDoc(collection(db, ENTRIES_COLLECTION), entryData);
 
   return docRef.id;
 }
@@ -55,7 +62,6 @@ export async function updateEntry(
   };
 
   if (data.date !== undefined) updateData.date = Timestamp.fromDate(data.date);
-  if (data.time !== undefined) updateData.time = data.time;
   if (data.brand !== undefined) updateData.brand = data.brand;
   if (data.show !== undefined) updateData.show = data.show;
   if (data.minutesCompleted !== undefined)
@@ -97,6 +103,26 @@ export function subscribeToEntries(
     const entries: Entry[] = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
+    })) as Entry[];
+    callback(entries);
+  });
+}
+
+/** Subscribe to entries tagged with a specific teamId */
+export function subscribeToTeamTaggedEntries(
+  teamId: string,
+  callback: (entries: Entry[]) => void
+): () => void {
+  const q = query(
+    collection(db, ENTRIES_COLLECTION),
+    where("teamId", "==", teamId),
+    orderBy("date", "desc")
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const entries: Entry[] = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
     })) as Entry[];
     callback(entries);
   });

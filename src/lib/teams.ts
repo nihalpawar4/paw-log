@@ -239,7 +239,7 @@ export async function joinTeamByCode(
 
   const now = Timestamp.now();
 
-  // Add as member
+  // CRITICAL: Add as member — this is the essential operation
   await addDoc(collection(db, TEAM_MEMBERS), {
     teamId: invite.teamId,
     userId,
@@ -250,18 +250,26 @@ export async function joinTeamByCode(
     lastActiveAt: now,
   });
 
-  // Increment member count
-  const teamSnap = await getDoc(doc(db, TEAMS, invite.teamId));
-  if (teamSnap.exists()) {
-    const currentCount = (teamSnap.data() as Team).memberCount || 0;
-    await updateDoc(doc(db, TEAMS, invite.teamId), {
-      memberCount: currentCount + 1,
-      updatedAt: now,
-    });
+  // NON-CRITICAL: Update member count and log activity
+  // These should not fail the join if they encounter permission issues
+  try {
+    const teamSnap = await getDoc(doc(db, TEAMS, invite.teamId));
+    if (teamSnap.exists()) {
+      const currentCount = (teamSnap.data() as Team).memberCount || 0;
+      await updateDoc(doc(db, TEAMS, invite.teamId), {
+        memberCount: currentCount + 1,
+        updatedAt: now,
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to update member count (non-critical):", e);
   }
 
-  // Log activity
-  await logActivity(invite.teamId, userId, userName, userPhotoURL, "joined", `${userName} joined the team`);
+  try {
+    await logActivity(invite.teamId, userId, userName, userPhotoURL, "joined", `${userName} joined the team`);
+  } catch (e) {
+    console.warn("Failed to log join activity (non-critical):", e);
+  }
 
   return invite.teamId;
 }

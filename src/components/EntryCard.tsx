@@ -5,7 +5,7 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { Entry } from "@/types";
 import { formatTime } from "@/lib/analytics";
 import { format } from "date-fns";
-import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText } from "lucide-react";
+import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users } from "lucide-react";
 
 interface EntryCardProps {
   entry: Entry;
@@ -94,6 +94,18 @@ export default function EntryCard({
           </div>
         )}
       </div>
+
+      {/* Team Badge */}
+      {entry.teamName && (
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-foreground/[0.04] border border-border">
+            <Users className="h-3 w-3 text-muted-foreground" />
+            <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-medium">
+              {entry.teamName}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Duration — big and beautiful */}
       <div className="mb-4">

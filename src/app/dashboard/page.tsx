@@ -10,7 +10,10 @@ import {
   updateEntry,
   subscribeToSettings,
   setUserSettings,
+  subscribeToTeamTaggedEntries,
 } from "@/lib/firestore";
+import { subscribeToUserTeams } from "@/lib/teams";
+import { Team } from "@/types/teams";
 import {
   formatTime,
   getTodayTotal,
@@ -50,6 +53,8 @@ export default function DashboardPage() {
 
   const [editEntry, setEditEntry] = useState<Entry | null>(null);
   const [orderedEntries, setOrderedEntries] = useState<Entry[]>([]);
+  const [userTeams, setUserTeams] = useState<Team[]>([]);
+  const [teamEntries, setTeamEntries] = useState<Entry[]>([]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -92,6 +97,38 @@ export default function DashboardPage() {
   useEffect(() => {
     setOrderedEntries(entries.slice(0, 5));
   }, [entries]);
+
+  // Subscribe to user's teams
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeToUserTeams(user.uid, setUserTeams);
+    return () => unsub();
+  }, [user]);
+
+  // Subscribe to team-tagged entries for all user's teams
+  useEffect(() => {
+    if (userTeams.length === 0) {
+      setTeamEntries([]);
+      return;
+    }
+    const unsubs: (() => void)[] = [];
+    const entriesByTeam = new Map<string, Entry[]>();
+
+    userTeams.forEach((team) => {
+      const unsub = subscribeToTeamTaggedEntries(team.id, (teamEnts) => {
+        // Filter out entries created by the current user (they already show in personal entries)
+        const otherEntries = teamEnts.filter((e) => e.userId !== user?.uid);
+        entriesByTeam.set(team.id, otherEntries);
+        // Merge all team entries
+        const all = Array.from(entriesByTeam.values()).flat();
+        all.sort((a, b) => b.date.toMillis() - a.date.toMillis());
+        setTeamEntries(all);
+      });
+      unsubs.push(unsub);
+    });
+
+    return () => unsubs.forEach((u) => u());
+  }, [userTeams, user]);
 
   const handleSaveEntry = useCallback(
     async (data: EntryFormData) => {
@@ -389,6 +426,39 @@ export default function DashboardPage() {
               )}
             </div>
           </motion.div>
+
+          {/* Team Entries */}
+          {teamEntries.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="mt-8"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Team Activity
+                </span>
+                <button
+                  onClick={() => router.push("/teams")}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+                >
+                  View teams →
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {teamEntries.slice(0, 5).map((entry, i) => (
+                  <EntryCard
+                    key={entry.id}
+                    entry={entry}
+                    index={i}
+                    compact
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
         </main>
       </PageTransition>
