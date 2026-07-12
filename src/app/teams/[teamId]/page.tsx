@@ -365,6 +365,8 @@ export default function TeamDashboardPage() {
         onSave={handleSaveTeamEntry}
         teamId={team.id}
         teamName={team.name}
+        teamMembers={members}
+        currentUserId={user?.uid}
       />
     </div>
   );

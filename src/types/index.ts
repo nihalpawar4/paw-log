@@ -1,5 +1,12 @@
 import { Timestamp } from "firebase/firestore";
 
+/** A mentioned/tagged teammate */
+export interface MentionedUser {
+  userId: string;
+  displayName: string;
+  photoURL?: string;
+}
+
 /** Firestore entry document shape */
 export interface Entry {
   id: string;
@@ -16,6 +23,7 @@ export interface Entry {
   // Team entry fields
   teamId?: string; // if set, this entry belongs to a team
   teamName?: string;
+  mentionedUsers?: MentionedUser[]; // tagged teammates
   // Legacy fields (old entries still have these in Firestore)
   topic?: string;
   description?: string;
@@ -35,6 +43,7 @@ export interface EntryFormData {
   corrections: string;
   teamId?: string;
   teamName?: string;
+  mentionedUsers?: MentionedUser[];
 }
 
 /** User profile from Firebase Auth */

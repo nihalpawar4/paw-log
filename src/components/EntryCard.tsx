@@ -5,7 +5,8 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { Entry } from "@/types";
 import { formatTime } from "@/lib/analytics";
 import { format } from "date-fns";
-import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users } from "lucide-react";
+import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users, AtSign } from "lucide-react";
+import Image from "next/image";
 
 interface EntryCardProps {
   entry: Entry;
@@ -127,6 +128,36 @@ export default function EntryCard({
         <div className="flex items-center gap-2 mb-2">
           <Tv className="h-3 w-3 text-muted-foreground" />
           <span className="text-sm text-muted-foreground italic">{entry.show}</span>
+        </div>
+      )}
+
+      {/* Mentioned Teammates */}
+      {entry.mentionedUsers && entry.mentionedUsers.length > 0 && (
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <AtSign className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {entry.mentionedUsers.map((u) => (
+              <span
+                key={u.userId}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-foreground/[0.04] border border-border text-[11px] text-muted-foreground"
+              >
+                {u.photoURL ? (
+                  <Image
+                    src={u.photoURL}
+                    alt={u.displayName}
+                    width={14}
+                    height={14}
+                    className="h-3.5 w-3.5 rounded-full"
+                  />
+                ) : (
+                  <span className="h-3.5 w-3.5 rounded-full bg-foreground/[0.08] border border-border inline-flex items-center justify-center text-[8px] font-medium">
+                    {u.displayName?.charAt(0)?.toUpperCase()}
+                  </span>
+                )}
+                {u.displayName}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

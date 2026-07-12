@@ -47,6 +47,11 @@ export async function createEntry(
     entryData.teamName = data.teamName || "";
   }
 
+  // Save mentioned teammates
+  if (data.mentionedUsers && data.mentionedUsers.length > 0) {
+    entryData.mentionedUsers = data.mentionedUsers;
+  }
+
   const docRef = await addDoc(collection(db, ENTRIES_COLLECTION), entryData);
 
   return docRef.id;

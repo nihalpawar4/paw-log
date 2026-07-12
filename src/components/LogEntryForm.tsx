@@ -17,10 +17,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Save, Sparkles } from "lucide-react";
+import { CalendarIcon, Save, Sparkles, X } from "lucide-react";
 import { format } from "date-fns";
-import { EntryFormData, Entry } from "@/types";
+import { EntryFormData, Entry, MentionedUser } from "@/types";
+import { TeamMember } from "@/types/teams";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface LogEntryFormProps {
   open: boolean;
@@ -29,6 +31,8 @@ interface LogEntryFormProps {
   editEntry?: Entry | null;
   teamId?: string;
   teamName?: string;
+  teamMembers?: TeamMember[];
+  currentUserId?: string;
 }
 
 /**
@@ -47,6 +51,8 @@ function LogEntryFormInner({
   editEntry,
   teamId,
   teamName,
+  teamMembers,
+  currentUserId,
 }: LogEntryFormProps) {
   const [date, setDate] = useState<Date>(() =>
     editEntry ? editEntry.date.toDate() : new Date()
@@ -64,8 +70,30 @@ function LogEntryFormInner({
       : ""
   );
   const [corrections, setCorrections] = useState(() => editEntry?.corrections || editEntry?.notes || "");
+  const [mentionedUsers, setMentionedUsers] = useState<MentionedUser[]>(
+    () => editEntry?.mentionedUsers || []
+  );
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Filter out the current user from taggable members
+  const taggableMembers = (teamMembers || []).filter(
+    (m) => m.userId !== currentUserId
+  );
+
+  const toggleMention = useCallback((member: TeamMember) => {
+    setMentionedUsers((prev) => {
+      const exists = prev.find((u) => u.userId === member.userId);
+      if (exists) {
+        return prev.filter((u) => u.userId !== member.userId);
+      }
+      return [...prev, {
+        userId: member.userId,
+        displayName: member.displayName,
+        photoURL: member.photoURL || undefined,
+      }];
+    });
+  }, []);
 
   const resetForm = useCallback(() => {
     setDate(new Date());
@@ -74,6 +102,7 @@ function LogEntryFormInner({
     setMinutes("");
     setSeconds("");
     setCorrections("");
+    setMentionedUsers([]);
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -87,6 +116,7 @@ function LogEntryFormInner({
         secondsCompleted: parseInt(seconds) || 0,
         corrections: corrections.trim(),
         ...(teamId ? { teamId, teamName } : {}),
+        ...(mentionedUsers.length > 0 ? { mentionedUsers } : {}),
       });
       resetForm();
       onClose();
@@ -96,7 +126,7 @@ function LogEntryFormInner({
     } finally {
       setSaving(false);
     }
-  }, [date, brand, show, minutes, seconds, corrections, onSave, onClose, editEntry, resetForm, teamId, teamName]);
+  }, [date, brand, show, minutes, seconds, corrections, mentionedUsers, onSave, onClose, editEntry, resetForm, teamId, teamName]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -124,6 +154,55 @@ function LogEntryFormInner({
                 <span className="text-xs text-muted-foreground">
                   Creating entry for <span className="text-foreground font-medium">{teamName}</span>
                 </span>
+              </div>
+            )}
+
+            {/* Tag Teammates */}
+            {teamId && taggableMembers.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Tag Teammates
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {taggableMembers.map((member) => {
+                    const isTagged = mentionedUsers.some(
+                      (u) => u.userId === member.userId
+                    );
+                    return (
+                      <button
+                        key={member.userId}
+                        type="button"
+                        onClick={() => toggleMention(member)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs transition-all duration-200 border ${
+                          isTagged
+                            ? "bg-foreground/10 border-foreground/30 text-foreground"
+                            : "border-border text-muted-foreground hover:border-foreground/20 hover:bg-foreground/[0.04]"
+                        }`}
+                      >
+                        {member.photoURL ? (
+                          <Image
+                            src={member.photoURL}
+                            alt={member.displayName}
+                            width={18}
+                            height={18}
+                            className="h-[18px] w-[18px] rounded-full ring-1 ring-border"
+                          />
+                        ) : (
+                          <div className="h-[18px] w-[18px] rounded-full bg-foreground/[0.08] border border-border flex items-center justify-center text-[9px] font-medium">
+                            {member.displayName?.charAt(0)?.toUpperCase()}
+                          </div>
+                        )}
+                        <span>{member.displayName}</span>
+                        {isTagged && <X className="h-3 w-3 ml-0.5" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                {mentionedUsers.length > 0 && (
+                  <p className="text-[10px] text-muted-foreground/60 italic">
+                    {mentionedUsers.length} teammate{mentionedUsers.length > 1 ? "s" : ""} tagged
+                  </p>
+                )}
               </div>
             )}
 
