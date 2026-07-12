@@ -5,12 +5,15 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { TeamActivity } from "@/types/teams";
 import { formatDistanceToNow } from "date-fns";
-import { UserPlus, UserMinus, FileText, Flame, Crown, LogOut } from "lucide-react";
+import { UserPlus, UserMinus, FileText, Flame, Crown, LogOut, RefreshCw, Trash2, AtSign } from "lucide-react";
 
 const activityIcons = {
   joined: UserPlus,
   left: LogOut,
   entry_created: FileText,
+  entry_updated: RefreshCw,
+  entry_deleted: Trash2,
+  entry_mentioned: AtSign,
   streak_milestone: Flame,
   member_removed: UserMinus,
   ownership_transferred: Crown,
@@ -20,6 +23,9 @@ const activityColors = {
   joined: "text-green-400/70",
   left: "text-muted-foreground/50",
   entry_created: "text-foreground/60",
+  entry_updated: "text-blue-400/70",
+  entry_deleted: "text-red-400/70",
+  entry_mentioned: "text-violet-400/70",
   streak_milestone: "text-amber-400/70",
   member_removed: "text-red-400/70",
   ownership_transferred: "text-amber-400/70",

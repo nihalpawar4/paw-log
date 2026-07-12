@@ -12,6 +12,7 @@ import ZenSkeleton from "@/components/ZenSkeleton";
 import EmptyTeams from "@/components/teams/EmptyTeams";
 import TeamCard from "@/components/teams/TeamCard";
 import TeamsIntroBanner from "@/components/teams/TeamsIntroBanner";
+import TeamsTour from "@/components/teams/TeamsTour";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -79,6 +80,9 @@ export default function TeamsPage() {
 
       {/* First-time intro banner */}
       <TeamsIntroBanner />
+
+      {/* Guided tour for new users */}
+      <TeamsTour />
 
       <PageTransition>
         <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">

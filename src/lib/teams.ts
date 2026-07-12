@@ -468,7 +468,60 @@ export async function logEntryActivity(
     userName,
     userPhotoURL,
     "entry_created",
-    `${userName} created a new log`
+    `${userName} created a new log entry`
+  );
+}
+
+/** Log entry update activity */
+export async function logEntryUpdatedActivity(
+  teamId: string,
+  userId: string,
+  userName: string,
+  userPhotoURL: string
+): Promise<void> {
+  await logActivity(
+    teamId,
+    userId,
+    userName,
+    userPhotoURL,
+    "entry_updated",
+    `${userName} updated a log entry`
+  );
+}
+
+/** Log entry deletion activity */
+export async function logEntryDeletedActivity(
+  teamId: string,
+  userId: string,
+  userName: string,
+  userPhotoURL: string
+): Promise<void> {
+  await logActivity(
+    teamId,
+    userId,
+    userName,
+    userPhotoURL,
+    "entry_deleted",
+    `${userName} deleted a log entry`
+  );
+}
+
+/** Log teammate mention activity */
+export async function logMentionActivity(
+  teamId: string,
+  userId: string,
+  userName: string,
+  userPhotoURL: string,
+  mentionedNames: string[]
+): Promise<void> {
+  const names = mentionedNames.join(", ");
+  await logActivity(
+    teamId,
+    userId,
+    userName,
+    userPhotoURL,
+    "entry_mentioned",
+    `${userName} tagged ${names} in an entry`
   );
 }
 

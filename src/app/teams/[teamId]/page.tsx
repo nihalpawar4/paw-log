@@ -12,6 +12,7 @@ import {
   subscribeToTeamActivities,
   getUserMembership,
   logEntryActivity,
+  logMentionActivity,
 } from "@/lib/teams";
 import { Team, TeamMember, TeamActivity } from "@/types/teams";
 import { Entry, EntryFormData } from "@/types";
@@ -114,7 +115,7 @@ export default function TeamDashboardPage() {
         teamId: team.id,
         teamName: team.name,
       });
-      // Log activity in the team feed
+      // Log activities in the team feed
       try {
         await logEntryActivity(
           team.id,
@@ -122,6 +123,16 @@ export default function TeamDashboardPage() {
           user.displayName || "Anonymous",
           user.photoURL || ""
         );
+        // Log mention activity if teammates were tagged
+        if (data.mentionedUsers && data.mentionedUsers.length > 0) {
+          await logMentionActivity(
+            team.id,
+            user.uid,
+            user.displayName || "Anonymous",
+            user.photoURL || "",
+            data.mentionedUsers.map((u) => u.displayName)
+          );
+        }
       } catch (e) {
         console.warn("Failed to log entry activity:", e);
       }

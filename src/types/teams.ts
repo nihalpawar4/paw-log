@@ -52,6 +52,9 @@ export type ActivityType =
   | "joined"
   | "left"
   | "entry_created"
+  | "entry_updated"
+  | "entry_deleted"
+  | "entry_mentioned"
   | "streak_milestone"
   | "member_removed"
   | "ownership_transferred";
