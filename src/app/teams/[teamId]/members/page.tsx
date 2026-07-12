@@ -134,7 +134,7 @@ export default function MembersPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
             >
-              <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
                 {team.name}
               </h1>
               <p className="text-sm text-muted-foreground italic font-light">

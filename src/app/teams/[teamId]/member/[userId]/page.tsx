@@ -133,7 +133,7 @@ export default function MemberProfilePage() {
               )}
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl sm:text-2xl font-extralight text-foreground">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
                     {member.displayName}
                   </h2>
                   {member.role === "owner" && (
@@ -163,7 +163,7 @@ export default function MemberProfilePage() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extralight text-foreground">{stat.value}</span>
+                    <span className="text-2xl font-semibold text-foreground">{stat.value}</span>
                     {stat.unit && <span className="text-xs text-muted-foreground">{stat.unit}</span>}
                   </div>
                 </motion.div>

@@ -55,7 +55,7 @@ export default function ActivityPage() {
         <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
                 Activity Feed
               </h1>
               <p className="text-sm text-muted-foreground italic font-light">{team.name}</p>

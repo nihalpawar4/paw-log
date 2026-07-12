@@ -123,7 +123,7 @@ export default function TeamAnalyticsPage() {
         <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
                 Team Analytics
               </h1>
               <p className="text-sm text-muted-foreground italic font-light">{team.name}</p>
@@ -146,7 +146,7 @@ export default function TeamAnalyticsPage() {
                     <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{stat.label}</span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extralight text-foreground">{stat.value}</span>
+                    <span className="text-2xl font-semibold text-foreground">{stat.value}</span>
                     {stat.unit && <span className="text-xs text-muted-foreground">{stat.unit}</span>}
                   </div>
                 </motion.div>

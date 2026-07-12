@@ -76,7 +76,7 @@ export default function CreateTeamPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-2">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-2">
                 Create Team
               </h1>
               <p className="text-sm text-muted-foreground italic font-light mb-8">

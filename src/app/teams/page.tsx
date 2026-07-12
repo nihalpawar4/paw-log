@@ -96,7 +96,7 @@ export default function TeamsPage() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
                     <em className="font-light not-italic">Teams</em>
                   </h1>
                   <p className="text-sm text-muted-foreground italic font-light">

@@ -187,7 +187,7 @@ export default function TeamDashboardPage() {
                   {team.avatar}
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground">
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                     {team.name}
                   </h1>
                   {team.description && (
@@ -218,7 +218,7 @@ export default function TeamDashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-extralight text-foreground">
+                    <span className="text-2xl font-semibold text-foreground">
                       {stat.value}
                     </span>
                     {stat.unit && (
@@ -237,9 +237,9 @@ export default function TeamDashboardPage() {
                 transition={{ delay: 0.3 }}
                 className="bg-card border border-border rounded-2xl p-4 sm:p-6"
               >
-                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-4 block">
+                <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground/80 mb-4 block">
                   Invite Members
-                </span>
+                </h3>
 
                 <div className="bg-background/50 rounded-xl p-3 mb-4">
                   <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/60 block mb-1">
@@ -280,9 +280,9 @@ export default function TeamDashboardPage() {
                 className="bg-card border border-border rounded-2xl p-4 sm:p-6"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground/80">
                     Recent Activity
-                  </span>
+                  </h3>
                   <Link
                     href={`/teams/${teamId}/activity`}
                     className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
@@ -312,10 +312,10 @@ export default function TeamDashboardPage() {
               transition={{ delay: 0.4 }}
               className="bg-card border border-border rounded-2xl p-4 sm:p-6 mt-4"
             >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Members · {members.length}
-                </span>
+              <div className="flex items-center justify-between mb-4 border-b border-border/50 pb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">
+                    Members · {members.length}
+                  </h3>
                 <Link
                   href={`/teams/${teamId}/members`}
                   className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"

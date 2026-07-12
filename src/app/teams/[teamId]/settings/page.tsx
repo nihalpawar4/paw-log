@@ -173,7 +173,7 @@ export default function TeamSettingsPage() {
             </motion.button>
 
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-1">
+              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
                 Team Settings
               </h1>
             </motion.div>
