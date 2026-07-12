@@ -106,6 +106,29 @@ export default function TeamDashboardPage() {
     };
   }, [entries]);
 
+  const handleSaveTeamEntry = useCallback(
+    async (data: EntryFormData) => {
+      if (!user || !team) return;
+      await createEntry(user.uid, {
+        ...data,
+        teamId: team.id,
+        teamName: team.name,
+      });
+      // Log activity in the team feed
+      try {
+        await logEntryActivity(
+          team.id,
+          user.uid,
+          user.displayName || "Anonymous",
+          user.photoURL || ""
+        );
+      } catch (e) {
+        console.warn("Failed to log entry activity:", e);
+      }
+    },
+    [user, team]
+  );
+
   if (authLoading || !user || loading) return <ZenSkeleton />;
   if (!team) {
     return (
@@ -133,29 +156,6 @@ export default function TeamDashboardPage() {
     navigator.clipboard.writeText(link);
     toast.success("Invite link copied!");
   };
-
-  const handleSaveTeamEntry = useCallback(
-    async (data: EntryFormData) => {
-      if (!user || !team) return;
-      await createEntry(user.uid, {
-        ...data,
-        teamId: team.id,
-        teamName: team.name,
-      });
-      // Log activity in the team feed
-      try {
-        await logEntryActivity(
-          team.id,
-          user.uid,
-          user.displayName || "Anonymous",
-          user.photoURL || ""
-        );
-      } catch (e) {
-        console.warn("Failed to log entry activity:", e);
-      }
-    },
-    [user, team]
-  );
 
   return (
     <div className="min-h-screen bg-background">
