@@ -11,11 +11,11 @@ import {
   subscribeToTeamEntries,
   subscribeToTeamActivities,
   getUserMembership,
+  logEntryActivity,
 } from "@/lib/teams";
 import { Team, TeamMember, TeamActivity } from "@/types/teams";
 import { Entry, EntryFormData } from "@/types";
 import { createEntry } from "@/lib/firestore";
-import { logEntryActivity } from "@/lib/teams";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
 import ActivityItem from "@/components/teams/ActivityItem";
