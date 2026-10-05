@@ -16,6 +16,7 @@ import { Team, TeamMember } from "@/types/teams";
 import { Entry } from "@/types";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
+import { MobileTeamMenu } from "@/components/teams/TeamNav";
 import MemberCard from "@/components/teams/MemberCard";
 import ZenSkeleton from "@/components/ZenSkeleton";
 import { Input } from "@/components/ui/input";
@@ -134,12 +135,17 @@ export default function MembersPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
             >
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
-                {team.name}
-              </h1>
-              <p className="text-sm text-muted-foreground italic font-light">
-                {members.length} {members.length === 1 ? "member" : "members"}
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
+                    {team.name}
+                  </h1>
+                  <p className="text-sm text-muted-foreground italic font-light">
+                    {members.length} {members.length === 1 ? "member" : "members"}
+                  </p>
+                </div>
+                <MobileTeamMenu teamId={teamId} isOwner={isOwner} />
+              </div>
             </motion.div>
 
             <TeamNav teamId={teamId} isOwner={isOwner} />

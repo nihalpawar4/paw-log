@@ -19,6 +19,7 @@ import {
 import { Team, TeamMember } from "@/types/teams";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
+import { MobileTeamMenu } from "@/components/teams/TeamNav";
 import ZenSkeleton from "@/components/ZenSkeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -173,9 +174,12 @@ export default function TeamSettingsPage() {
             </motion.button>
 
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
-                Team Settings
-              </h1>
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
+                  Team Settings
+                </h1>
+                <MobileTeamMenu teamId={teamId} isOwner={isOwner} />
+              </div>
             </motion.div>
 
             <TeamNav teamId={teamId} isOwner={isOwner} />

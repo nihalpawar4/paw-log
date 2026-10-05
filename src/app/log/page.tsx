@@ -153,7 +153,7 @@ export default function LogPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-2xl sm:text-3xl font-extralight tracking-tight text-foreground mb-2">
+            <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground mb-2">
               Log Your Work
             </h1>
             <p className="text-sm text-muted-foreground italic font-light mb-8">

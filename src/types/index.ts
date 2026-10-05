@@ -74,4 +74,4 @@ export interface AnalyticsSummary {
 }
 
 /** Export range presets */
-export type ExportRange = "last30" | "thisMonth" | "allTime";
+export type ExportRange = "last30" | "thisMonth" | "allTime" | "custom";

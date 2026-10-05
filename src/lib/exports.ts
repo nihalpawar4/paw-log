@@ -3,9 +3,14 @@ import { format, subDays, startOfMonth } from "date-fns";
 import { formatTime } from "./analytics";
 
 /**
- * Filter entries by export range preset.
+ * Filter entries by export range preset or custom date range.
  */
-function filterByRange(entries: Entry[], range: ExportRange): Entry[] {
+function filterByRange(
+  entries: Entry[],
+  range: ExportRange,
+  customFrom?: Date,
+  customTo?: Date
+): Entry[] {
   const now = new Date();
 
   switch (range) {
@@ -17,9 +22,44 @@ function filterByRange(entries: Entry[], range: ExportRange): Entry[] {
       const monthStart = startOfMonth(now);
       return entries.filter((e) => e.date.toDate() >= monthStart);
     }
+    case "custom": {
+      if (!customFrom || !customTo) return entries;
+      const from = new Date(customFrom);
+      from.setHours(0, 0, 0, 0);
+      const to = new Date(customTo);
+      to.setHours(23, 59, 59, 999);
+      return entries.filter((e) => {
+        const d = e.date.toDate();
+        return d >= from && d <= to;
+      });
+    }
     case "allTime":
     default:
       return entries;
+  }
+}
+
+/**
+ * Get a human-readable label for the range.
+ */
+export function getRangeLabel(
+  range: ExportRange,
+  customFrom?: Date,
+  customTo?: Date
+): string {
+  switch (range) {
+    case "last30":
+      return "Last 30 Days";
+    case "thisMonth":
+      return "This Month";
+    case "custom":
+      if (customFrom && customTo) {
+        return `${format(customFrom, "dd MMM yyyy")} – ${format(customTo, "dd MMM yyyy")}`;
+      }
+      return "Custom Range";
+    case "allTime":
+    default:
+      return "All Time";
   }
 }
 
@@ -92,11 +132,33 @@ function getActiveColumns(entries: Entry[]): ExportColumn[] {
 }
 
 /**
+ * Compute summary stats for the filtered entries.
+ */
+function computeSummary(entries: Entry[]) {
+  const totalSeconds = entries.reduce((sum, e) => sum + e.totalSeconds, 0);
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const totalHours = (totalSeconds / 3600).toFixed(1);
+  return {
+    totalEntries: entries.length,
+    totalSeconds,
+    totalMinutes,
+    totalHours,
+    totalDuration: formatTime(totalSeconds),
+  };
+}
+
+/**
  * Export entries as CSV and trigger download.
  */
-export function exportAsCSV(entries: Entry[], range: ExportRange): void {
-  const filtered = filterByRange(entries, range);
+export function exportAsCSV(
+  entries: Entry[],
+  range: ExportRange,
+  customFrom?: Date,
+  customTo?: Date
+): void {
+  const filtered = filterByRange(entries, range, customFrom, customTo);
   const columns = getActiveColumns(filtered);
+  const summary = computeSummary(filtered);
 
   const headers = columns.map((c) => c.header);
 
@@ -109,8 +171,39 @@ export function exportAsCSV(entries: Entry[], range: ExportRange): void {
     })
   );
 
-  const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-  downloadFile(csv, `myregister-export-${range}-${format(new Date(), "yyyy-MM-dd")}.csv`, "text/csv");
+  // Add empty separator row
+  const emptyRow = columns.map(() => "");
+
+  // Summary rows at the bottom
+  const summaryRows = [
+    emptyRow,
+    buildSummaryRow(columns, "Total Entries", String(summary.totalEntries)),
+    buildSummaryRow(columns, "Total Minutes", String(summary.totalMinutes)),
+    buildSummaryRow(columns, "Total Hours", summary.totalHours),
+    buildSummaryRow(columns, "Total Duration", summary.totalDuration),
+  ];
+
+  const csv = [
+    headers.join(","),
+    ...rows.map((r) => r.join(",")),
+    ...summaryRows.map((r) => r.join(",")),
+  ].join("\n");
+
+  const rangeLabel = getRangeLabel(range, customFrom, customTo).replace(/\s/g, "-");
+  downloadFile(
+    csv,
+    `myregister-export-${rangeLabel}-${format(new Date(), "yyyy-MM-dd")}.csv`,
+    "text/csv"
+  );
+}
+
+/** Build a summary row for CSV: puts label in first column and value in duration column */
+function buildSummaryRow(columns: ExportColumn[], label: string, value: string): string[] {
+  return columns.map((col, i) => {
+    if (i === 0) return label;
+    if (col.key === "duration") return value;
+    return "";
+  });
 }
 
 /**
@@ -119,13 +212,17 @@ export function exportAsCSV(entries: Entry[], range: ExportRange): void {
 export async function exportAsPDF(
   entries: Entry[],
   range: ExportRange,
-  userName: string
+  userName: string,
+  customFrom?: Date,
+  customTo?: Date
 ): Promise<void> {
   const { default: jsPDF } = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
 
-  const filtered = filterByRange(entries, range);
+  const filtered = filterByRange(entries, range, customFrom, customTo);
   const columns = getActiveColumns(filtered);
+  const summary = computeSummary(filtered);
+  const rangeLabel = getRangeLabel(range, customFrom, customTo);
 
   // Use landscape if many columns, portrait if few
   const orientation = columns.length > 4 ? "landscape" : "portrait";
@@ -144,16 +241,10 @@ export async function exportAsPDF(
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   doc.text(`Editor: ${userName}`, 20, 45);
-  doc.text(
-    `Report: ${range === "last30" ? "Last 30 Days" : range === "thisMonth" ? "This Month" : "All Time"}`,
-    20,
-    52
-  );
+  doc.text(`Report: ${rangeLabel}`, 20, 52);
   doc.text(`Generated: ${format(new Date(), "MMMM d, yyyy")}`, 20, 59);
-  doc.text(`Total Entries: ${filtered.length}`, 20, 66);
-
-  const totalSeconds = filtered.reduce((sum, e) => sum + e.totalSeconds, 0);
-  doc.text(`Total Duration: ${formatTime(totalSeconds)}`, 20, 73);
+  doc.text(`Total Entries: ${summary.totalEntries}`, 20, 66);
+  doc.text(`Total Duration: ${summary.totalDuration}`, 20, 73);
 
   // Separator line
   doc.setDrawColor(200);
@@ -169,19 +260,47 @@ export async function exportAsPDF(
     }
   });
 
+  // Build body rows + summary rows at bottom
+  const bodyRows = filtered.map((e) =>
+    columns.map((col) => {
+      const val = col.getValue(e);
+      if (col.key === "corrections" && val.length > 60) {
+        return val.substring(0, 60) + "...";
+      }
+      return val || "-";
+    })
+  );
+
+  // Add summary rows at the bottom of the table
+  const summaryTableRows = [
+    columns.map((col, i) => (i === 0 ? "" : "")), // empty separator
+    columns.map((col, i) => {
+      if (i === 0) return "TOTAL ENTRIES";
+      if (col.key === "duration") return String(summary.totalEntries);
+      return "";
+    }),
+    columns.map((col, i) => {
+      if (i === 0) return "TOTAL MINUTES";
+      if (col.key === "duration") return String(summary.totalMinutes);
+      return "";
+    }),
+    columns.map((col, i) => {
+      if (i === 0) return "TOTAL HOURS";
+      if (col.key === "duration") return summary.totalHours;
+      return "";
+    }),
+    columns.map((col, i) => {
+      if (i === 0) return "TOTAL DURATION";
+      if (col.key === "duration") return summary.totalDuration;
+      return "";
+    }),
+  ];
+
   // Table
   autoTable(doc, {
     startY: 85,
     head: [columns.map((c) => c.header)],
-    body: filtered.map((e) =>
-      columns.map((col) => {
-        const val = col.getValue(e);
-        if (col.key === "corrections" && val.length > 60) {
-          return val.substring(0, 60) + "...";
-        }
-        return val || "-";
-      })
-    ),
+    body: [...bodyRows, ...summaryTableRows],
     styles: {
       fontSize: 9,
       cellPadding: 4,
@@ -196,11 +315,21 @@ export async function exportAsPDF(
     alternateRowStyles: {
       fillColor: [248, 248, 248],
     },
+    // Style summary rows with bold text
+    didParseCell: (data) => {
+      const totalRowStart = bodyRows.length;
+      if (data.section === "body" && data.row.index >= totalRowStart) {
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.fillColor = [235, 235, 235];
+        data.cell.styles.textColor = [0, 0, 0];
+      }
+    },
     theme: "grid",
     columnStyles,
   });
 
-  doc.save(`myregister-report-${range}-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  const fileSuffix = rangeLabel.replace(/\s/g, "-");
+  doc.save(`myregister-report-${fileSuffix}-${format(new Date(), "yyyy-MM-dd")}.pdf`);
 }
 
 /**
@@ -208,11 +337,14 @@ export async function exportAsPDF(
  */
 export async function exportAsExcel(
   entries: Entry[],
-  range: ExportRange
+  range: ExportRange,
+  customFrom?: Date,
+  customTo?: Date
 ): Promise<void> {
   const XLSX = await import("xlsx");
-  const filtered = filterByRange(entries, range);
+  const filtered = filterByRange(entries, range, customFrom, customTo);
   const columns = getActiveColumns(filtered);
+  const summary = computeSummary(filtered);
 
   const data = filtered.map((e) => {
     const row: Record<string, string> = {};
@@ -222,16 +354,39 @@ export async function exportAsExcel(
     return row;
   });
 
-  const ws = XLSX.utils.json_to_sheet(data);
+  // Add empty separator row
+  const emptyRow: Record<string, string> = {};
+  columns.forEach((col) => {
+    emptyRow[col.header] = "";
+  });
+
+  // Summary rows
+  const summaryRows = [
+    { label: "Total Entries", value: String(summary.totalEntries) },
+    { label: "Total Minutes", value: String(summary.totalMinutes) },
+    { label: "Total Hours", value: summary.totalHours },
+    { label: "Total Duration", value: summary.totalDuration },
+  ].map(({ label, value }) => {
+    const row: Record<string, string> = {};
+    columns.forEach((col, i) => {
+      if (i === 0) row[col.header] = label;
+      else if (col.key === "duration") row[col.header] = value;
+      else row[col.header] = "";
+    });
+    return row;
+  });
+
+  const ws = XLSX.utils.json_to_sheet([...data, emptyRow, ...summaryRows]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "MyRegister Entries");
 
   // Set column widths dynamically
   ws["!cols"] = columns.map((col) => ({ wch: col.colWidth }));
 
+  const rangeLabel = getRangeLabel(range, customFrom, customTo).replace(/\s/g, "-");
   XLSX.writeFile(
     wb,
-    `myregister-export-${range}-${format(new Date(), "yyyy-MM-dd")}.xlsx`
+    `myregister-export-${rangeLabel}-${format(new Date(), "yyyy-MM-dd")}.xlsx`
   );
 }
 

@@ -19,6 +19,7 @@ import { Entry, EntryFormData } from "@/types";
 import { createEntry } from "@/lib/firestore";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
+import { MobileTeamMenu } from "@/components/teams/TeamNav";
 import ActivityItem from "@/components/teams/ActivityItem";
 import LogEntryForm from "@/components/LogEntryForm";
 import ZenSkeleton from "@/components/ZenSkeleton";
@@ -186,16 +187,18 @@ export default function TeamDashboardPage() {
                 <div className="w-14 h-14 rounded-xl bg-foreground/[0.06] border border-border flex items-center justify-center text-3xl">
                   {team.avatar}
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
                     {team.name}
                   </h1>
                   {team.description && (
-                    <p className="text-sm text-muted-foreground italic font-light mt-0.5">
+                    <p className="text-sm text-muted-foreground italic font-light mt-0.5 truncate">
                       {team.description}
                     </p>
                   )}
                 </div>
+                {/* Mobile hamburger — right side of header */}
+                <MobileTeamMenu teamId={teamId} isOwner={isOwner} />
               </div>
             </motion.div>
 

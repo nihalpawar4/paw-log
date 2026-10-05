@@ -16,6 +16,7 @@ import { Team, TeamMember } from "@/types/teams";
 import { Entry } from "@/types";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
+import { MobileTeamMenu } from "@/components/teams/TeamNav";
 import MiniChart from "@/components/MiniChart";
 import ZenSkeleton from "@/components/ZenSkeleton";
 import {
@@ -123,10 +124,15 @@ export default function TeamAnalyticsPage() {
         <main className="pt-20 md:pt-24 pb-28 md:pb-12 px-4 sm:px-8">
           <div className="max-w-4xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-              <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
-                Team Analytics
-              </h1>
-              <p className="text-sm text-muted-foreground italic font-light">{team.name}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-1">
+                    Team Analytics
+                  </h1>
+                  <p className="text-sm text-muted-foreground italic font-light">{team.name}</p>
+                </div>
+                <MobileTeamMenu teamId={teamId} isOwner={isOwner} />
+              </div>
             </motion.div>
 
             <TeamNav teamId={teamId} isOwner={isOwner} />

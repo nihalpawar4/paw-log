@@ -17,6 +17,7 @@ import { Team, TeamMember } from "@/types/teams";
 import { Entry } from "@/types";
 import Navbar from "@/components/Navbar";
 import TeamNav from "@/components/teams/TeamNav";
+import { MobileTeamMenu } from "@/components/teams/TeamNav";
 import EntryCard from "@/components/EntryCard";
 import MiniChart from "@/components/MiniChart";
 import ZenSkeleton from "@/components/ZenSkeleton";
@@ -109,6 +110,11 @@ export default function MemberProfilePage() {
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">Back to {team.name}</span>
             </motion.button>
+
+            <div className="flex items-center justify-between mb-2 md:mb-0">
+              <div className="md:hidden" />
+              <MobileTeamMenu teamId={teamId} isOwner={isOwner} />
+            </div>
 
             <TeamNav teamId={teamId} isOwner={isOwner} />
 
