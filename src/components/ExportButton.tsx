@@ -21,6 +21,7 @@ import {
   FileSpreadsheet,
   File,
   CalendarRange,
+  CalendarDays,
 } from "lucide-react";
 import { Entry, ExportRange } from "@/types";
 import {
@@ -30,7 +31,7 @@ import {
   getRangeLabel,
 } from "@/lib/exports";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 
 interface ExportButtonProps {
   entries: Entry[];
@@ -45,6 +46,9 @@ export default function ExportButton({ entries, userName }: ExportButtonProps) {
   );
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  const [fromInput, setFromInput] = useState("");
+  const [toInput, setToInput] = useState("");
+  const [activeField, setActiveField] = useState<"from" | "to">("from");
 
   const handleExport = async (
     type: "csv" | "pdf" | "excel",
@@ -79,7 +83,64 @@ export default function ExportButton({ entries, userName }: ExportButtonProps) {
     setPendingType(type);
     setFromDate(undefined);
     setToDate(undefined);
+    setFromInput("");
+    setToInput("");
+    setActiveField("from");
     setShowDatePicker(true);
+  };
+
+  const handleFromDateSelect = (date: Date | undefined) => {
+    setFromDate(date);
+    if (date) {
+      setFromInput(format(date, "dd/MM/yyyy"));
+      setActiveField("to");
+    }
+  };
+
+  const handleToDateSelect = (date: Date | undefined) => {
+    setToDate(date);
+    if (date) {
+      setToInput(format(date, "dd/MM/yyyy"));
+    }
+  };
+
+  const handleCalendarSelect = (date: Date | undefined) => {
+    if (activeField === "from") {
+      handleFromDateSelect(date);
+    } else {
+      handleToDateSelect(date);
+    }
+  };
+
+  const parseInputDate = (value: string): Date | undefined => {
+    // Try dd/MM/yyyy
+    let parsed = parse(value, "dd/MM/yyyy", new Date());
+    if (isValid(parsed)) return parsed;
+    // Try yyyy-MM-dd
+    parsed = parse(value, "yyyy-MM-dd", new Date());
+    if (isValid(parsed)) return parsed;
+    // Try dd-MM-yyyy
+    parsed = parse(value, "dd-MM-yyyy", new Date());
+    if (isValid(parsed)) return parsed;
+    return undefined;
+  };
+
+  const handleFromInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFromInput(val);
+    const parsed = parseInputDate(val);
+    if (parsed && parsed <= new Date()) {
+      setFromDate(parsed);
+    }
+  };
+
+  const handleToInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setToInput(val);
+    const parsed = parseInputDate(val);
+    if (parsed && parsed <= new Date()) {
+      setToDate(parsed);
+    }
   };
 
   const handleCustomExport = () => {
@@ -122,6 +183,10 @@ export default function ExportButton({ entries, userName }: ExportButtonProps) {
       icon: <FileSpreadsheet className="h-3 w-3" />,
     },
   ];
+
+  // Determine which month to show on calendar based on active field
+  const calendarMonth =
+    activeField === "to" && fromDate ? fromDate : undefined;
 
   return (
     <>
@@ -172,92 +237,130 @@ export default function ExportButton({ entries, userName }: ExportButtonProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Custom Date Range Dialog */}
+      {/* Custom Date Range Dialog — single calendar, mobile-friendly */}
       <Dialog open={showDatePicker} onOpenChange={setShowDatePicker}>
-        <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-sm mx-auto bg-card border-border text-foreground p-4 sm:p-6 max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold tracking-tight">
+            <DialogTitle className="text-base sm:text-lg font-semibold tracking-tight flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
               Select Date Range
             </DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               Export as{" "}
               <span className="font-medium text-foreground uppercase">
                 {pendingType}
-              </span>{" "}
-              for a custom date range
+              </span>
             </p>
           </DialogHeader>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-2">
-            {/* From Date */}
-            <div className="flex-1">
-              <label className="text-xs text-muted-foreground uppercase tracking-widest mb-2 block">
+          {/* Date input fields */}
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mb-1 block">
                 From
               </label>
-              <div className="rounded-lg border border-border overflow-hidden">
-                <Calendar
-                  mode="single"
-                  selected={fromDate}
-                  onSelect={setFromDate}
-                  disabled={(date) => date > new Date()}
-                  className="w-full"
-                />
-              </div>
-              {fromDate && (
-                <p className="text-xs text-muted-foreground mt-1.5 text-center">
-                  {format(fromDate, "dd MMM yyyy")}
-                </p>
-              )}
+              <input
+                type="text"
+                placeholder="dd/mm/yyyy"
+                value={fromInput}
+                onChange={handleFromInputChange}
+                onFocus={() => setActiveField("from")}
+                className={`w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground placeholder:text-muted-foreground/40 outline-none transition-colors ${
+                  activeField === "from"
+                    ? "border-foreground/40 ring-1 ring-foreground/10"
+                    : "border-border"
+                }`}
+              />
             </div>
-
-            {/* To Date */}
-            <div className="flex-1">
-              <label className="text-xs text-muted-foreground uppercase tracking-widest mb-2 block">
+            <div>
+              <label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mb-1 block">
                 To
               </label>
-              <div className="rounded-lg border border-border overflow-hidden">
-                <Calendar
-                  mode="single"
-                  selected={toDate}
-                  onSelect={setToDate}
-                  disabled={(date) =>
-                    date > new Date() || (fromDate ? date < fromDate : false)
-                  }
-                  className="w-full"
-                />
-              </div>
-              {toDate && (
-                <p className="text-xs text-muted-foreground mt-1.5 text-center">
-                  {format(toDate, "dd MMM yyyy")}
-                </p>
-              )}
+              <input
+                type="text"
+                placeholder="dd/mm/yyyy"
+                value={toInput}
+                onChange={handleToInputChange}
+                onFocus={() => setActiveField("to")}
+                className={`w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground placeholder:text-muted-foreground/40 outline-none transition-colors ${
+                  activeField === "to"
+                    ? "border-foreground/40 ring-1 ring-foreground/10"
+                    : "border-border"
+                }`}
+              />
             </div>
           </div>
+
+          {/* Single shared calendar */}
+          <div className="mt-3 flex justify-center">
+            <div className="rounded-lg border border-border overflow-hidden w-full max-w-[280px]">
+              <Calendar
+                mode="single"
+                selected={activeField === "from" ? fromDate : toDate}
+                onSelect={handleCalendarSelect}
+                defaultMonth={calendarMonth}
+                disabled={(date) => {
+                  if (date > new Date()) return true;
+                  if (activeField === "to" && fromDate && date < fromDate)
+                    return true;
+                  return false;
+                }}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* Active field indicator */}
+          <p className="text-center text-xs text-muted-foreground mt-1">
+            Selecting{" "}
+            <button
+              onClick={() => setActiveField("from")}
+              className={`font-medium transition-colors ${
+                activeField === "from"
+                  ? "text-foreground underline underline-offset-2"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              start
+            </button>
+            {" / "}
+            <button
+              onClick={() => setActiveField("to")}
+              className={`font-medium transition-colors ${
+                activeField === "to"
+                  ? "text-foreground underline underline-offset-2"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              end
+            </button>{" "}
+            date
+          </p>
 
           {/* Selected range preview */}
           {fromDate && toDate && (
             <div className="mt-2 px-3 py-2 rounded-lg bg-accent/50 border border-border">
-              <p className="text-sm text-foreground text-center">
+              <p className="text-xs sm:text-sm text-foreground text-center font-medium">
                 {format(fromDate, "dd MMM yyyy")} →{" "}
                 {format(toDate, "dd MMM yyyy")}
               </p>
             </div>
           )}
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3 mt-3">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 text-sm"
               onClick={() => setShowDatePicker(false)}
             >
               Cancel
             </Button>
             <Button
-              className="flex-1"
+              className="flex-1 text-sm"
               disabled={!fromDate || !toDate || exporting}
               onClick={handleCustomExport}
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-3.5 w-3.5 mr-1.5" />
               {exporting ? "Exporting…" : "Export"}
             </Button>
           </div>
