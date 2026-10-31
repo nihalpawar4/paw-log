@@ -171,6 +171,35 @@ export function getTodayTotal(entries: Entry[]): number {
 }
 
 /**
+ * Get the current month's total seconds from entries.
+ */
+export function getMonthTotal(entries: Entry[]): number {
+  const now = new Date();
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
+  return entries
+    .filter((e) =>
+      isWithinInterval(e.date.toDate(), { start: monthStart, end: monthEnd })
+    )
+    .reduce((sum, e) => sum + e.totalSeconds, 0);
+}
+
+/**
+ * Format total seconds into a human-readable duration string.
+ * e.g. "2h 35m" or "45m 20s"
+ */
+export function formatDurationLong(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  }
+  return `${mins}m ${secs.toString().padStart(2, "0")}s`;
+}
+
+/**
  * Format seconds into MM:SS display string.
  */
 export function formatTime(totalSeconds: number): string {

@@ -16,6 +16,7 @@ export interface Entry {
   time?: string; // e.g. "14:30" or "2:30 PM" (legacy, no longer collected)
   brand?: string;
   show?: string;
+  episodeNo?: number; // Episode number (1-2000)
   minutesCompleted: number;
   secondsCompleted: number;
   totalSeconds: number; // auto-calculated: minutes * 60 + seconds
@@ -38,6 +39,7 @@ export interface EntryFormData {
   date: Date;
   brand: string;
   show: string;
+  episodeNo?: number; // Episode number (1-2000)
   minutesCompleted: number;
   secondsCompleted: number;
   corrections: string;

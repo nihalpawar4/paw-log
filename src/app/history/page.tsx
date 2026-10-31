@@ -253,7 +253,7 @@ export default function HistoryPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    {["Date", "Time", "Brand", "Show", "Duration", "Corrections", ""].map(
+                    {["Date", "Time", "Brand", "Show", "Ep.", "Duration", "Corrections", ""].map(
                       (h) => (
                         <th
                           key={h}
@@ -286,6 +286,9 @@ export default function HistoryPage() {
                         </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground">
                           {entry.show || "-"}
+                        </td>
+                        <td className="py-3.5 px-3 text-sm text-muted-foreground whitespace-nowrap">
+                          {entry.episodeNo || "-"}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-foreground font-light whitespace-nowrap">
                           {formatTime(entry.totalSeconds)}

@@ -20,6 +20,8 @@ import {
   calculateStreak,
   getChartData,
   getWeeklyProgress,
+  getMonthTotal,
+  formatDurationLong,
 } from "@/lib/analytics";
 import { getStreakQuote } from "@/lib/quotes";
 import { Entry, EntryFormData, UserSettings } from "@/types";
@@ -38,6 +40,7 @@ import {
   Flame,
   Target,
   TrendingUp,
+  CalendarDays,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -206,6 +209,7 @@ export default function DashboardPage() {
 
   // Computed values
   const todayTotalSeconds = getTodayTotal(entries);
+  const monthTotalSeconds = getMonthTotal(entries);
   const streakData = calculateStreak(entries);
   const chartData = getChartData(entries, 30);
   const dailyGoal = settings?.dailyGoalMinutes || 30;
@@ -249,6 +253,27 @@ export default function DashboardPage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            {/* Monthly Total Duration */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08, duration: 0.5 }}
+              className="col-span-2 lg:col-span-4 bg-card border border-border rounded-2xl p-4 sm:p-6 hover:border-foreground/15 transition-colors duration-300"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  This Month&apos;s Total Duration
+                </span>
+              </div>
+              <div className="text-3xl sm:text-4xl md:text-5xl font-extralight tracking-tight text-foreground">
+                {formatDurationLong(monthTotalSeconds)}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5 tracking-wider">
+                {formatTime(monthTotalSeconds)} total · {new Date().toLocaleString("default", { month: "long", year: "numeric" })}
+              </p>
+            </motion.div>
+
             {/* Today's Total */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}

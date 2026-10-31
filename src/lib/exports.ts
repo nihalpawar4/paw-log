@@ -107,6 +107,13 @@ function getActiveColumns(entries: Entry[]): ExportColumn[] {
       pdfWidth: 45,
     },
     {
+      key: "episodeNo",
+      header: "Episode No.",
+      getValue: (e) => e.episodeNo ? e.episodeNo.toString() : "",
+      colWidth: 12,
+      pdfWidth: 22,
+    },
+    {
       key: "duration",
       header: "Duration",
       getValue: (e) => formatTime(e.totalSeconds),

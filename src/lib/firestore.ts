@@ -33,6 +33,7 @@ export async function createEntry(
     date: Timestamp.fromDate(data.date),
     brand: data.brand || "",
     show: data.show || "",
+    episodeNo: data.episodeNo || null,
     minutesCompleted: data.minutesCompleted,
     secondsCompleted: data.secondsCompleted,
     totalSeconds,
@@ -69,6 +70,7 @@ export async function updateEntry(
   if (data.date !== undefined) updateData.date = Timestamp.fromDate(data.date);
   if (data.brand !== undefined) updateData.brand = data.brand;
   if (data.show !== undefined) updateData.show = data.show;
+  if (data.episodeNo !== undefined) updateData.episodeNo = data.episodeNo || null;
   if (data.minutesCompleted !== undefined)
     updateData.minutesCompleted = data.minutesCompleted;
   if (data.secondsCompleted !== undefined)

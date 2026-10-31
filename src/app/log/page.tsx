@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { createEntry, subscribeToEntries, subscribeToSettings } from "@/lib/firestore";
@@ -21,11 +21,242 @@ import {
   ArrowLeft,
   Save,
   Sparkles,
+  ChevronDown,
+  Timer,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
+
+/** Predefined brand/platform options */
+const BRAND_OPTIONS = [
+  "KukuTV",
+  "KukuFM",
+  "PocketFM",
+  "Pratilipi",
+  "Mavin",
+  "Spotflix",
+  "Josh",
+  "Moj",
+  "Roposo",
+  "ShareChat",
+  "Ullu",
+  "MX Player",
+  "Hungama",
+  "Hoichoi",
+  "Stage",
+  "Aha",
+  "Nuefliks",
+  "Vokal",
+  "Audiokitab",
+  "Storytel",
+];
+
+/** Searchable Combobox for Brand selection */
+function BrandCombobox({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearch(value);
+  }, [value]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
+
+  const filtered = BRAND_OPTIONS.filter((b) =>
+    b.toLowerCase().includes((search || "").toLowerCase())
+  );
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          placeholder="Select or type brand name"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            onChange(e.target.value);
+            if (!open) setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          className="bg-card border-border text-foreground h-12 pr-9"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(!open);
+            if (!open) inputRef.current?.focus();
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {open && filtered.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto bg-card border border-border rounded-lg shadow-lg"
+          >
+            {filtered.map((brand) => (
+              <button
+                key={brand}
+                type="button"
+                onClick={() => {
+                  onChange(brand);
+                  setSearch(brand);
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 text-sm transition-colors duration-150 hover:bg-accent ${
+                  value === brand
+                    ? "text-foreground font-medium bg-accent/50"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {brand}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/** Searchable Combobox for Episode Number selection */
+function EpisodeCombobox({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearch(value);
+  }, [value]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [open]);
+
+  const getSuggestions = (): number[] => {
+    const num = parseInt(search);
+    if (!search || isNaN(num)) {
+      return [1, 2, 3, 4, 5, 10, 20, 50, 100];
+    }
+    const suggestions: number[] = [];
+    const start = Math.max(1, num - 2);
+    const end = Math.min(2000, num + 7);
+    for (let i = start; i <= end; i++) {
+      suggestions.push(i);
+    }
+    return suggestions;
+  };
+
+  const suggestions = getSuggestions();
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          type="text"
+          inputMode="numeric"
+          placeholder="Select or type episode no."
+          value={search}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === "" || (/^\d+$/.test(val) && parseInt(val) >= 0 && parseInt(val) <= 2000)) {
+              setSearch(val);
+              onChange(val);
+              if (!open) setOpen(true);
+            }
+          }}
+          onFocus={() => setOpen(true)}
+          className="bg-card border-border text-foreground h-12 pr-9"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(!open);
+            if (!open) inputRef.current?.focus();
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {open && suggestions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto bg-card border border-border rounded-lg shadow-lg"
+          >
+            {suggestions.map((ep) => (
+              <button
+                key={ep}
+                type="button"
+                onClick={() => {
+                  onChange(ep.toString());
+                  setSearch(ep.toString());
+                  setOpen(false);
+                }}
+                className={`w-full text-left px-3 py-2 text-sm transition-colors duration-150 hover:bg-accent ${
+                  value === ep.toString()
+                    ? "text-foreground font-medium bg-accent/50"
+                    : "text-muted-foreground"
+                }`}
+              >
+                Episode {ep}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function LogPage() {
   const { user, loading: authLoading } = useAuth();
@@ -37,11 +268,17 @@ export default function LogPage() {
   const [time, setTime] = useState("");
   const [brand, setBrand] = useState("");
   const [show, setShow] = useState("");
+  const [episodeNo, setEpisodeNo] = useState("");
   const [minutes, setMinutes] = useState("");
   const [seconds, setSeconds] = useState("");
   const [corrections, setCorrections] = useState("");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Computed total duration
+  const totalSeconds = (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+  const totalMinutesDisplay = Math.floor(totalSeconds / 60);
+  const totalSecondsDisplay = totalSeconds % 60;
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/");
@@ -75,6 +312,7 @@ export default function LogPage() {
         date,
         brand: brand.trim(),
         show: show.trim(),
+        episodeNo: episodeNo ? parseInt(episodeNo) : undefined,
         minutesCompleted: parseInt(minutes) || 0,
         secondsCompleted: parseInt(seconds) || 0,
         corrections: corrections.trim(),
@@ -127,7 +365,7 @@ export default function LogPage() {
     } finally {
       setSaving(false);
     }
-  }, [user, date, time, brand, show, minutes, seconds, corrections, entries, settings, router]);
+  }, [user, date, time, brand, show, episodeNo, minutes, seconds, corrections, entries, settings, router]);
 
   if (authLoading || !user) return null;
 
@@ -203,17 +441,12 @@ export default function LogPage() {
                 />
               </div>
 
-              {/* Brand */}
+              {/* Brand - Searchable Select */}
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Brand
+                  Brand / Platform
                 </label>
-                <Input
-                  placeholder="Enter brand name"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  className="bg-card border-border text-foreground h-12"
-                />
+                <BrandCombobox value={brand} onChange={setBrand} />
               </div>
 
               {/* Show */}
@@ -227,6 +460,14 @@ export default function LogPage() {
                   onChange={(e) => setShow(e.target.value)}
                   className="bg-card border-border text-foreground h-12"
                 />
+              </div>
+
+              {/* Episode No. */}
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Episode No.
+                </label>
+                <EpisodeCombobox value={episodeNo} onChange={setEpisodeNo} />
               </div>
 
               {/* Duration */}
@@ -269,6 +510,28 @@ export default function LogPage() {
                     </span>
                   </div>
                 </div>
+
+                {/* Total Duration Display */}
+                {totalSeconds > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-foreground/[0.04] border border-border"
+                  >
+                    <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      Total:{" "}
+                      <span className="text-foreground font-medium">
+                        {totalMinutesDisplay}m {totalSecondsDisplay.toString().padStart(2, "0")}s
+                      </span>
+                      {totalSeconds >= 3600 && (
+                        <span className="ml-1 text-muted-foreground/70">
+                          ({(totalSeconds / 3600).toFixed(1)} hrs)
+                        </span>
+                      )}
+                    </span>
+                  </motion.div>
+                )}
               </div>
 
               {/* Corrections */}

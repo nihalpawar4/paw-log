@@ -5,7 +5,7 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { Entry } from "@/types";
 import { formatTime } from "@/lib/analytics";
 import { format } from "date-fns";
-import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users, AtSign } from "lucide-react";
+import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users, AtSign, Hash } from "lucide-react";
 import Image from "next/image";
 
 interface EntryCardProps {
@@ -128,6 +128,14 @@ export default function EntryCard({
         <div className="flex items-center gap-2 mb-2">
           <Tv className="h-3 w-3 text-muted-foreground" />
           <span className="text-sm text-muted-foreground italic">{entry.show}</span>
+        </div>
+      )}
+
+      {/* Episode Number Badge */}
+      {entry.episodeNo && (
+        <div className="flex items-center gap-2 mb-2">
+          <Hash className="h-3 w-3 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Ep. {entry.episodeNo}</span>
         </div>
       )}
 
