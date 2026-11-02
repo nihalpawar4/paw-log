@@ -33,11 +33,13 @@ export async function createEntry(
     date: Timestamp.fromDate(data.date),
     brand: data.brand || "",
     show: data.show || "",
-    episodeNo: data.episodeNo || null,
+    episodes: data.episodes && data.episodes.length > 0 ? data.episodes : null,
     minutesCompleted: data.minutesCompleted,
     secondsCompleted: data.secondsCompleted,
     totalSeconds,
     corrections: data.corrections || "",
+    creations: data.creations || "",
+    extraCorrections: data.extraCorrections || "",
     createdAt: now,
     updatedAt: now,
   };
@@ -70,7 +72,7 @@ export async function updateEntry(
   if (data.date !== undefined) updateData.date = Timestamp.fromDate(data.date);
   if (data.brand !== undefined) updateData.brand = data.brand;
   if (data.show !== undefined) updateData.show = data.show;
-  if (data.episodeNo !== undefined) updateData.episodeNo = data.episodeNo || null;
+  if (data.episodes !== undefined) updateData.episodes = data.episodes && data.episodes.length > 0 ? data.episodes : null;
   if (data.minutesCompleted !== undefined)
     updateData.minutesCompleted = data.minutesCompleted;
   if (data.secondsCompleted !== undefined)
@@ -84,6 +86,8 @@ export async function updateEntry(
     updateData.totalSeconds = mins * 60 + secs;
   }
   if (data.corrections !== undefined) updateData.corrections = data.corrections;
+  if (data.creations !== undefined) updateData.creations = data.creations;
+  if (data.extraCorrections !== undefined) updateData.extraCorrections = data.extraCorrections;
 
   await updateDoc(doc(db, ENTRIES_COLLECTION, entryId), updateData);
 }

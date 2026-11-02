@@ -16,11 +16,14 @@ export interface Entry {
   time?: string; // e.g. "14:30" or "2:30 PM" (legacy, no longer collected)
   brand?: string;
   show?: string;
-  episodeNo?: number; // Episode number (1-2000)
+  episodeNo?: number; // Legacy single episode (old entries)
+  episodes?: number[]; // Multiple episode numbers (1-2000)
   minutesCompleted: number;
   secondsCompleted: number;
   totalSeconds: number; // auto-calculated: minutes * 60 + seconds
   corrections?: string;
+  creations?: string; // Creations work done
+  extraCorrections?: string; // Extra corrections if any
   // Team entry fields
   teamId?: string; // if set, this entry belongs to a team
   teamName?: string;
@@ -39,10 +42,12 @@ export interface EntryFormData {
   date: Date;
   brand: string;
   show: string;
-  episodeNo?: number; // Episode number (1-2000)
+  episodes?: number[]; // Multiple episode numbers (1-2000)
   minutesCompleted: number;
   secondsCompleted: number;
   corrections: string;
+  creations: string; // Creations work done
+  extraCorrections: string; // Extra corrections if any
   teamId?: string;
   teamName?: string;
   mentionedUsers?: MentionedUser[];

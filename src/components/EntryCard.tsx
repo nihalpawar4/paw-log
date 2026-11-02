@@ -5,7 +5,7 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { Entry } from "@/types";
 import { formatTime } from "@/lib/analytics";
 import { format } from "date-fns";
-import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users, AtSign, Hash } from "lucide-react";
+import { Tag, Clock, Timer, Edit3, Trash2, GripVertical, Tv, FileText, Users, AtSign, Hash, Paintbrush, FilePlus2 } from "lucide-react";
 import Image from "next/image";
 
 interface EntryCardProps {
@@ -131,13 +131,30 @@ export default function EntryCard({
         </div>
       )}
 
-      {/* Episode Number Badge */}
-      {entry.episodeNo && (
-        <div className="flex items-center gap-2 mb-2">
-          <Hash className="h-3 w-3 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Ep. {entry.episodeNo}</span>
-        </div>
-      )}
+      {/* Episode Number Badges — supports both old single + new array */}
+      {(() => {
+        const eps = entry.episodes && entry.episodes.length > 0
+          ? entry.episodes
+          : entry.episodeNo
+          ? [entry.episodeNo]
+          : [];
+        if (eps.length === 0) return null;
+        return (
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <Hash className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-1 flex-wrap">
+              {eps.map((ep) => (
+                <span
+                  key={ep}
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-foreground/[0.06] border border-border text-xs text-muted-foreground"
+                >
+                  Ep {ep}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Mentioned Teammates */}
       {entry.mentionedUsers && entry.mentionedUsers.length > 0 && (
@@ -176,17 +193,29 @@ export default function EntryCard({
         </p>
       )}
 
-      {/* Bottom Row: Corrections / legacy notes */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground/70 mt-2">
+      {/* Bottom Row: Corrections / Creations / Extra Corrections / legacy notes */}
+      <div className="flex flex-col gap-1.5 text-xs text-muted-foreground/70 mt-2">
         {entry.corrections && (
           <div className="flex items-center gap-1.5">
-            <FileText className="h-3 w-3" />
+            <FileText className="h-3 w-3 flex-shrink-0" />
             <span className="truncate max-w-[250px]">{entry.corrections}</span>
+          </div>
+        )}
+        {entry.creations && (
+          <div className="flex items-center gap-1.5">
+            <Paintbrush className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate max-w-[250px]">{entry.creations}</span>
+          </div>
+        )}
+        {entry.extraCorrections && (
+          <div className="flex items-center gap-1.5">
+            <FilePlus2 className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate max-w-[250px]">{entry.extraCorrections}</span>
           </div>
         )}
         {entry.notes && (
           <div className="flex items-center gap-1.5">
-            <FileText className="h-3 w-3" />
+            <FileText className="h-3 w-3 flex-shrink-0" />
             <span className="truncate max-w-[150px]">{entry.notes}</span>
           </div>
         )}

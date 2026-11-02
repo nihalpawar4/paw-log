@@ -72,6 +72,8 @@ export default function HistoryPage() {
           (e.show || "").toLowerCase().includes(q) ||
           (e.description || "").toLowerCase().includes(q) ||
           (e.corrections || "").toLowerCase().includes(q) ||
+          (e.creations || "").toLowerCase().includes(q) ||
+          (e.extraCorrections || "").toLowerCase().includes(q) ||
           (e.notes || "").toLowerCase().includes(q)
       );
     }
@@ -253,7 +255,7 @@ export default function HistoryPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    {["Date", "Time", "Brand", "Show", "Ep.", "Duration", "Corrections", ""].map(
+                    {["Date", "Time", "Brand", "Show", "Episodes", "Duration", "Corrections", "Creations", ""].map(
                       (h) => (
                         <th
                           key={h}
@@ -288,13 +290,18 @@ export default function HistoryPage() {
                           {entry.show || "-"}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground whitespace-nowrap">
-                          {entry.episodeNo || "-"}
+                          {entry.episodes && entry.episodes.length > 0
+                            ? entry.episodes.join(", ")
+                            : entry.episodeNo || "-"}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-foreground font-light whitespace-nowrap">
                           {formatTime(entry.totalSeconds)}
                         </td>
                         <td className="py-3.5 px-3 text-sm text-muted-foreground/70 italic max-w-[200px] truncate">
                           {entry.corrections || entry.description || entry.notes || "-"}
+                        </td>
+                        <td className="py-3.5 px-3 text-sm text-muted-foreground/70 italic max-w-[150px] truncate">
+                          {entry.creations || "-"}
                         </td>
                         <td className="py-3.5 px-3">
                           <div className="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">

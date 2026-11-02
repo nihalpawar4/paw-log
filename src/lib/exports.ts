@@ -109,9 +109,13 @@ function getActiveColumns(entries: Entry[]): ExportColumn[] {
     {
       key: "episodeNo",
       header: "Episode No.",
-      getValue: (e) => e.episodeNo ? e.episodeNo.toString() : "",
-      colWidth: 12,
-      pdfWidth: 22,
+      getValue: (e) => {
+        if (e.episodes && e.episodes.length > 0) return e.episodes.join(", ");
+        if (e.episodeNo) return e.episodeNo.toString();
+        return "";
+      },
+      colWidth: 16,
+      pdfWidth: 28,
     },
     {
       key: "duration",
@@ -124,6 +128,18 @@ function getActiveColumns(entries: Entry[]): ExportColumn[] {
       key: "corrections",
       header: "Corrections",
       getValue: (e) => e.corrections || e.description || e.notes || "",
+      colWidth: 40,
+    },
+    {
+      key: "creations",
+      header: "Creations",
+      getValue: (e) => e.creations || "",
+      colWidth: 40,
+    },
+    {
+      key: "extraCorrections",
+      header: "Extra Corrections",
+      getValue: (e) => e.extraCorrections || "",
       colWidth: 40,
     },
   ];

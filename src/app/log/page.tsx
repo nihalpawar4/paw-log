@@ -23,6 +23,8 @@ import {
   Sparkles,
   ChevronDown,
   Timer,
+  X,
+  Plus,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -147,22 +149,18 @@ function BrandCombobox({
   );
 }
 
-/** Searchable Combobox for Episode Number selection */
-function EpisodeCombobox({
-  value,
+/** Multi-Episode Chips input — type or select, adds as chips */
+function MultiEpisodeInput({
+  episodes,
   onChange,
 }: {
-  value: string;
-  onChange: (v: string) => void;
+  episodes: number[];
+  onChange: (eps: number[]) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState(value);
+  const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setSearch(value);
-  }, [value]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -176,16 +174,40 @@ function EpisodeCombobox({
     }
   }, [open]);
 
+  const addEpisode = (ep: number) => {
+    if (ep >= 1 && ep <= 2000 && !episodes.includes(ep)) {
+      onChange([...episodes, ep].sort((a, b) => a - b));
+    }
+    setSearch("");
+  };
+
+  const removeEpisode = (ep: number) => {
+    onChange(episodes.filter((e) => e !== ep));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const num = parseInt(search);
+      if (!isNaN(num) && num >= 1 && num <= 2000) {
+        addEpisode(num);
+      }
+    }
+    if (e.key === "Backspace" && search === "" && episodes.length > 0) {
+      removeEpisode(episodes[episodes.length - 1]);
+    }
+  };
+
   const getSuggestions = (): number[] => {
     const num = parseInt(search);
     if (!search || isNaN(num)) {
-      return [1, 2, 3, 4, 5, 10, 20, 50, 100];
+      return [1, 2, 3, 4, 5, 10, 20, 50, 100].filter((n) => !episodes.includes(n));
     }
     const suggestions: number[] = [];
     const start = Math.max(1, num - 2);
     const end = Math.min(2000, num + 7);
     for (let i = start; i <= end; i++) {
-      suggestions.push(i);
+      if (!episodes.includes(i)) suggestions.push(i);
     }
     return suggestions;
   };
@@ -194,35 +216,66 @@ function EpisodeCombobox({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="relative">
-        <Input
+      <div
+        className="flex flex-wrap items-center gap-1.5 min-h-[48px] px-2.5 py-2 bg-card border border-border rounded-lg cursor-text"
+        onClick={() => inputRef.current?.focus()}
+      >
+        {episodes.map((ep) => (
+          <span
+            key={ep}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-foreground/[0.08] border border-border text-xs text-foreground font-medium"
+          >
+            Ep {ep}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeEpisode(ep);
+              }}
+              className="text-muted-foreground hover:text-foreground transition-colors ml-0.5"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </span>
+        ))}
+        <input
           ref={inputRef}
           type="text"
           inputMode="numeric"
-          placeholder="Select or type episode no."
+          placeholder={episodes.length === 0 ? "Type episode no. & press Enter" : "Add more..."}
           value={search}
           onChange={(e) => {
             const val = e.target.value;
             if (val === "" || (/^\d+$/.test(val) && parseInt(val) >= 0 && parseInt(val) <= 2000)) {
               setSearch(val);
-              onChange(val);
               if (!open) setOpen(true);
             }
           }}
           onFocus={() => setOpen(true)}
-          className="bg-card border-border text-foreground h-12 pr-9"
+          onKeyDown={handleKeyDown}
+          className="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
         />
         <button
           type="button"
           onClick={() => {
+            const num = parseInt(search);
+            if (!isNaN(num) && num >= 1 && num <= 2000) {
+              addEpisode(num);
+            }
             setOpen(!open);
             if (!open) inputRef.current?.focus();
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-0.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
         >
           <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </button>
       </div>
+
+      {episodes.length > 0 && (
+        <p className="text-[10px] text-muted-foreground/60 mt-1 px-1">
+          {episodes.length} episode{episodes.length > 1 ? "s" : ""} selected
+        </p>
+      )}
 
       <AnimatePresence>
         {open && suggestions.length > 0 && (
@@ -238,17 +291,15 @@ function EpisodeCombobox({
                 key={ep}
                 type="button"
                 onClick={() => {
-                  onChange(ep.toString());
-                  setSearch(ep.toString());
-                  setOpen(false);
+                  addEpisode(ep);
+                  inputRef.current?.focus();
                 }}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors duration-150 hover:bg-accent ${
-                  value === ep.toString()
-                    ? "text-foreground font-medium bg-accent/50"
-                    : "text-muted-foreground"
-                }`}
+                className="w-full text-left px-3 py-2 text-sm transition-colors duration-150 hover:bg-accent text-muted-foreground"
               >
-                Episode {ep}
+                <span className="flex items-center gap-2">
+                  <Plus className="h-3 w-3" />
+                  Episode {ep}
+                </span>
               </button>
             ))}
           </motion.div>
@@ -268,10 +319,12 @@ export default function LogPage() {
   const [time, setTime] = useState("");
   const [brand, setBrand] = useState("");
   const [show, setShow] = useState("");
-  const [episodeNo, setEpisodeNo] = useState("");
+  const [episodes, setEpisodes] = useState<number[]>([]);
   const [minutes, setMinutes] = useState("");
   const [seconds, setSeconds] = useState("");
   const [corrections, setCorrections] = useState("");
+  const [creations, setCreations] = useState("");
+  const [extraCorrections, setExtraCorrections] = useState("");
   const [saving, setSaving] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
@@ -312,10 +365,12 @@ export default function LogPage() {
         date,
         brand: brand.trim(),
         show: show.trim(),
-        episodeNo: episodeNo ? parseInt(episodeNo) : undefined,
+        episodes: episodes.length > 0 ? episodes : undefined,
         minutesCompleted: parseInt(minutes) || 0,
         secondsCompleted: parseInt(seconds) || 0,
         corrections: corrections.trim(),
+        creations: creations.trim(),
+        extraCorrections: extraCorrections.trim(),
       });
 
       // Check today's total to detect goal completion
@@ -365,7 +420,7 @@ export default function LogPage() {
     } finally {
       setSaving(false);
     }
-  }, [user, date, time, brand, show, episodeNo, minutes, seconds, corrections, entries, settings, router]);
+  }, [user, date, time, brand, show, episodes, minutes, seconds, corrections, creations, extraCorrections, entries, settings, router]);
 
   if (authLoading || !user) return null;
 
@@ -462,12 +517,12 @@ export default function LogPage() {
                 />
               </div>
 
-              {/* Episode No. */}
+              {/* Episode No. — Multi-select chips */}
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                   Episode No.
                 </label>
-                <EpisodeCombobox value={episodeNo} onChange={setEpisodeNo} />
+                <MultiEpisodeInput episodes={episodes} onChange={setEpisodes} />
               </div>
 
               {/* Duration */}
@@ -540,9 +595,35 @@ export default function LogPage() {
                   Corrections
                 </label>
                 <Textarea
-                  placeholder="Any corrections?"
+                  placeholder="What corrections were done?"
                   value={corrections}
                   onChange={(e) => setCorrections(e.target.value)}
+                  className="bg-card border-border text-foreground min-h-[80px] resize-none"
+                />
+              </div>
+
+              {/* Creations */}
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Creations
+                </label>
+                <Textarea
+                  placeholder="Any creations work done?"
+                  value={creations}
+                  onChange={(e) => setCreations(e.target.value)}
+                  className="bg-card border-border text-foreground min-h-[80px] resize-none"
+                />
+              </div>
+
+              {/* Extra Corrections */}
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Extra Corrections
+                </label>
+                <Textarea
+                  placeholder="Any extra corrections?"
+                  value={extraCorrections}
+                  onChange={(e) => setExtraCorrections(e.target.value)}
                   className="bg-card border-border text-foreground min-h-[80px] resize-none"
                 />
               </div>
